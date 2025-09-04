@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>San Mateo Weather & Situational Dashboard</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=123kZmhAbzMEXD2Mr0AzSydIhXh3DS6gU" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" />
+
+  <!-- Charts / Utilities -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@9.4.0/dist/panzoom.min.js"></script>
+
+  <style>
+    :root{ --brand-blue:#0d6efd; }
+    html,body{height:100%}
+    body{
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background:#fff; color:#1f2937;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Status bar */
+    .statusbar{
+      position:sticky; top:0; z-index:1040; padding:.5rem .75rem;
+      background:linear-gradient(90deg,#0d6efd 0%, #0ea5e9 100%);
+      color:#fff; box-shadow:0 1px 6px rgba(0,0,0,.15)
+    }
+    .chip{display:inline-flex; align-items:center; gap:.4rem; font-weight:600; border-radius:999px; padding:.25rem .6rem; margin:.2rem .25rem}
+    .statusbar .chip{background:rgba(255,255,255,.2)}
+
+    /* CURRENT WEATHER (hero + pills) */
+    .weather-card { border: 0; overflow: hidden; }
+    .weather-hero { background: linear-gradient(135deg,#4facfe 0%,#00f2fe 100%); color:#fff; }
+    .weather-hero.night { background: linear-gradient(135deg,#1f1c2c 0%,#928dab 100%); }
+    .hero-icon { width: 84px; height: 84px; filter: drop-shadow(0 6px 12px rgba(0,0,0,.2)); }
+
+    .metric-pill{
+      background:#f8fafc; border:1px solid #eef2f7; border-radius:14px;
+      padding:.75rem .9rem; height:100%;
+      box-shadow: 0 2px 6px rgba(16,24,40,.04);
+    }
+    .metric-label{ font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; color:#6b7280; }
+    .metric-value{ font-weight:700; font-size:1.05rem; color:#111827; }
+    .metric-sub{ font-size:.85rem; color:#6b7280; }
+    .wind-arrow{ display:inline-block; margin-left:.35rem; font-weight:700; color:#6b7280; transform: rotate(0deg) }
+
+    /* UV badge colors */
+    #uv-badge.bg-uv-low    { background:#d1fae5 !important; color:#065f46 !important; }
+    #uv-badge.bg-uv-mod    { background:#fee2e2 !important; color:#7f1d1d !important; }
+    #uv-badge.bg-uv-high   { background:#fecaca !important; color:#7f1d1d !important; }
+    #uv-badge.bg-uv-vhigh  { background:#fca5a5 !important; color:#7f1d1d !important; }
+    #uv-badge.bg-uv-extreme{ background:#ef4444 !important; color:#fff !important; }
+
+    /* Map */
+    #map{height:420px; border-radius:12px}
+
+    /* LIGHT-ONLY table + sticky headers/first col */
+    .table.forecast-table{
+      font-size:.95rem; color:#212529 !important; background-color:#ffffff !important;
+      --bs-table-striped-bg:#f8f9fa; --bs-table-hover-bg:#eef2ff;
+    }
+    .forecast-scroll-wrapper{position:relative; max-height:480px; overflow:auto; scrollbar-width:thin}
+    .forecast-scroll-wrapper thead th{
+      position:sticky; top:0; z-index:2; background:#fff !important; border-bottom:2px solid #e5e7eb !important;
+    }
+    .forecast-scroll-wrapper td:first-child{
+      position:sticky; left:0; z-index:3; background:#fff !important; border-right:1px solid #e5e7eb !important; font-weight:600;
+    }
+    .forecast-scroll-wrapper thead th:first-child{ z-index:4; }
+
+    @media (max-width:768px){
+      .hero-icon{ width:72px; height:72px; }
+      .table.forecast-table{ font-size:.9rem; }
+    }
+
+    /* Modal zoom toolbar */
+    #toolbarButtons{position:absolute; top:.5rem; right:.5rem; display:flex; gap:.5rem; z-index:1050; transition:opacity .4s}
+    #imageModal .modal-body{height:88vh; display:flex; align-items:center; justify-content:center; background:#000}
+    .image-wrapper{width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden}
+    .fit-height{max-height:100%; width:auto}
+    .fit-width{max-width:100%; height:auto}
+
+    .small-muted{font-size:.95rem; color:#6b7280}
+    .kbd{padding:.05rem .4rem; border-radius:.25rem; background:#000; color:#fff; font-size:.75rem}
+  </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- Status Bar -->
+  <div class="statusbar d-flex flex-wrap align-items-center gap-2">
+    <div class="me-auto fw-semibold">San Mateo, Rizal</div>
+    <div class="chip"><span>PH Time:</span><span id="ph-time">--:--:--</span></div>
+    <div class="chip"><span>Updated:</span><span id="last-updated">—</span></div>
+    <span id="status-severity"></span>
+  </div>
+
+  <main class="container py-3">
+
+    <!-- Operational Snapshot -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="section-title fw-bold">Operational Snapshot</div>
+          <div id="alert-chips" class="text-end"></div>
+        </div>
+        <div class="row g-3 mt-1">
+          <div class="col-12 col-lg-4">
+            <div class="p-3 border rounded-3 h-100">
+              <div class="fw-bold mb-1">Situation</div>
+              <div id="sitrep">Loading current weather…</div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="p-3 border rounded-3 h-100">
+              <div class="fw-bold mb-1">Impacts</div>
+              <div id="impacts" class="small-muted">Will auto-fill from current hazards.</div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="p-3 border rounded-3 h-100">
+              <div class="fw-bold mb-1">Actions</div>
+              <ul id="actions-list" class="mb-0 small">
+                <li>Assessing conditions…</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <a class="btn btn-sm btn-outline-primary" target="_blank" href="https://www.pagasa.dost.gov.ph/tropical-cyclone-advisory-iframe">PAGASA Daily</a>
+          <a class="btn btn-sm btn-outline-success" target="_blank" href="https://www.facebook.com/PAGASA.DOST.GOV.PH/">DOST-PAGASA</a>
+          <a class="btn btn-sm btn-outline-secondary" target="_blank" href="https://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/">FFWWS</a>
+          <a class="btn btn-sm btn-outline-info" target="_blank" href="https://zoom.earth/">Zoom Earth</a>
+          <a class="btn btn-sm btn-outline-warning" target="_blank" href="https://www.windy.com/?14.695,121.118,10,i:pressure">Windy</a>
+         
+          </div>
+      </div>
+    </div>
+
+    <!-- CURRENT WEATHER -->
+    <div class="card weather-card shadow-sm mb-3">
+      <div class="weather-hero d-flex align-items-center justify-content-between p-3 p-md-4">
+        <div class="d-flex align-items-center gap-3">
+          <img id="main-icon" class="hero-icon" alt="icon" />
+          <div>
+            <div class="display-5 fw-bold lh-1" id="current-temp">--°C</div>
+            <div class="text-white-75" id="current-desc">—</div>
+            <div class="small text-white-75">
+              Feels like <span id="feels-like">—</span>°C •
+              Sunrise <span id="sunrise">—</span> • Sunset <span id="sunset">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-end">
+          <div id="uv-badge" class="badge rounded-pill px-3 py-2 bg-light text-dark">
+            UV <span id="uv">—</span>
+          </div>
+          <div class="small mt-2 text-white-75">San Mateo, PH</div>
+        </div>
+      </div>
+
+      <div class="card-body pt-3">
+        <div class="row g-3 align-items-stretch">
+          <!-- Map -->
+          <div class="col-12 col-lg-7">
+            <div id="map" class="rounded-3 overflow-hidden"></div>
+            <div class="small text-muted mt-2">Map: San Mateo, Rizal, Phil.</div>
+          </div>
+
+          <!-- Metrics -->
+          <div class="col-12 col-lg-5">
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="metric-pill">
+                  <div class="metric-label">Wind</div>
+                  <div class="metric-value">
+                    <span id="wind">—</span> m/s
+                    <span class="text-muted">(<span id="wind-kph">—</span> kph)</span>
+                    <span id="wind-dir" class="wind-arrow" title="Direction">↑</span>
+                  </div>
+                  <div class="metric-sub" id="gust">Gusts — kph</div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="metric-pill">
+                  <div class="metric-label">Humidity</div>
+                  <div class="metric-value"><span id="humidity">—</span>%</div>
+                  <div class="metric-sub">Dew <span id="dew">—</span>°C</div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="metric-pill">
+                  <div class="metric-label">Pressure</div>
+                  <div class="metric-value"><span id="pressure">—</span> hPa</div>
+                  <div class="metric-sub">Clouds <span id="clouds">—</span>%</div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="metric-pill">
+                  <div class="metric-label">Visibility</div>
+                  <div class="metric-value"><span id="vis">—</span> km</div>
+                  <div class="metric-sub">Rain prob <span id="rain-prob">—</span>%</div>
+                </div>
+              </div>
+            </div> <!-- /row -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forecasts -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-primary text-white">Forecasts</div>
+      <div class="card-body">
+        <ul class="nav nav-tabs mb-3" role="tablist">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-hourly" type="button" role="tab">Hourly (12h)</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-daily" type="button" role="tab">7-Day Table</button></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="tab-hourly" role="tabpanel">
+            <div class="overflow-auto"><canvas id="hourlyChart" height="220"></canvas></div>
+          </div>
+          <div class="tab-pane fade" id="tab-daily" role="tabpanel">
+            <div class="forecast-scroll-wrapper table-responsive">
+              <table class="table table-bordered table-striped align-middle mb-0 forecast-table">
+                <thead>
+                  <tr>
+                    <th>Date</th><th>Summary</th><th>Icon</th>
+                    <th>Min/Max (°C)</th><th>Feels D/N (°C)</th>
+                    <th>Humidity</th><th>Pressure</th><th>Clouds</th>
+                    <th>Wind m/s</th><th>POP %</th><th>Rain mm</th><th>UVI</th>
+                  </tr>
+                </thead>
+                <tbody id="forecastTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGASA Synopsis -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-info text-white fw-bold d-flex justify-content-between align-items-center">
+        <span>PAGASA Synopsis</span>
+        <div class="d-flex align-items-center gap-2">
+          <span id="synopsis-severity"></span>
+          <button id="copy-synopsis-btn" class="btn btn-sm btn-light">Copy</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <p id="pagasa-synopsis" class="mb-2">Loading synopsis…</p>
+        <div class="small text-muted"><span id="pagasa-synopsis-updated">Source: PAGASA</span></div>
+      </div>
+    </div>
+
+    <!-- Alerts & Imagery (+ SWB in iframe for reference) -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-danger text-white">PAGASA Alerts & Imagery</div>
+      <div class="card-body">
+        <div class="alert alert-info py-2 small mb-2">
+          If the Severe Weather Bulletin cannot load here, open in a new tab:
+          <a class="fw-semibold" target="_blank" href="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin">PAGASA SWB</a>.
+        </div>
+        <iframe
+          src="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin"
+          title="PAGASA Severe Weather Bulletin"
+          width="100%" height="520" style="border:0;" loading="lazy"></iframe>
+
+          <!-- DOST-PAG ASA live-->
+                   <iframe
+          src="https://www.youtube.com/embed/MO287pziST4"
+          title="DOST-PAGASA Live"
+          width="100%" height="520" style="border:0;" loading="lazy"></iframe>
+
+        <div class="row g-3 mt-2">
+          <div class="col-6 col-lg-3">
+            <div class="card h-100">
+              <a data-bs-toggle="modal" data-bs-target="#imageModal"
+                 data-image="https://src.meteopilipinas.gov.ph/repo/himawari/24hour/irsml/1irsml.gif">
+                <img src="https://src.meteopilipinas.gov.ph/repo/himawari/24hour/irsml/1irsml.gif" class="card-img-top" style="height:120px;object-fit:cover" alt="Satellite">
+              </a>
+              <div class="card-body p-2 small text-center">Satellite Image</div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="card h-100">
+              <a data-bs-toggle="modal" data-bs-target="#imageModal"
+                 data-image="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/surface_map.jpg">
+                <img src="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/surface_map.jpg" class="card-img-top" style="height:120px;object-fit:cover" alt="Surface Map">
+              </a>
+              <div class="card-body p-2 small text-center">Surface Map Analysis</div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="card h-100">
+              <a data-bs-toggle="modal" data-bs-target="#imageModal"
+                 data-image="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/chart.png">
+                <img src="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/chart.png" class="card-img-top" style="height:120px;object-fit:cover" alt="MSLP">
+              </a>
+              <div class="card-body p-2 small text-center">Predicted Mean Sea Level Pressure</div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="card h-100">
+              <a data-bs-toggle="modal" data-bs-target="#imageModal"
+                 data-image="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/we98.png">
+                <img src="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/we98.png" class="card-img-top" style="height:120px;object-fit:cover" alt="Wind">
+              </a>
+              <div class="card-body p-2 small text-center">Predicted MSL Wind</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="mt-auto py-4 border-top">
+    <div class="container text-center">
+      <div class="small mb-1">Sources: OpenWeatherMap, MeteoPilipinas, PAGASA, Windy, Zoom Earth</div>
+      <div class="small">Developed by Engr. Rey Urbina</div>
+    </div>
+  </footer>
+
+  <!-- Image Zoom Modal -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down" style="max-width:98vw;">
+      <div class="modal-content bg-dark border-0">
+        <div class="modal-header border-0">
+          <h5 class="modal-title text-white">Preview</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0 position-relative">
+          <div id="toolbarButtons">
+            <button id="fitToggleBtn" class="btn btn-sm btn-light">Fit</button>
+            <button id="zoomInBtn" class="btn btn-sm btn-light">🔍 In</button>
+            <button id="zoomOutBtn" class="btn btn-sm btn-light">🔎 Out</button>
+            <button id="resetZoomBtn" class="btn btn-sm btn-secondary">Reset</button>
+          </div>
+          <div class="image-wrapper"><img id="modalImage" alt="" class="fit-height"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- PAGASA Synopsis + SWB parsers -->
+  <script>
+    let _synopsisSev = null;   // {score,label,chip,emoji}
+    let _latestOWM   = null;
+    let _swbInfo     = null;   // {tcwsMax, affectsLocal, systemType}
+
+    function detectSynopsisSeverity(text="") {
+      const t = text.toLowerCase();
+      const cyclone = /(super\s*)?typhoon|\btropical\s*cyclone\b|\btropical\s*storm\b|\btropical\s*depression\b/;
+      const monsoon = /\bmonsoon\b|habagat|amihan/;
+      const lpa     = /\blow\s*pressure\s*area\b|\blpa\b/;
+
+      if (cyclone.test(t)) return {score: 2, label: "Tropical Cyclone", chip: "sev",  emoji: "🌀"};
+      if (monsoon.test(t)) return {score: 1, label: "Monsoon",          chip: "warn", emoji: "🌧️"};
+      if (lpa.test(t))     return {score: 1, label: "LPA",              chip: "warn", emoji: "🌀"};
+      return {score: 0, label: "No significant system", chip: "ok", emoji: "✔️"};
+    }
+    function renderSeverityChip(targetId, result) {
+      const host = document.getElementById(targetId);
+      if (!host) return;
+      const bg = result.chip==='sev'?'#f8d7da':result.chip==='warn'?'#fff3cd':'#d1e7dd';
+      const fg = result.chip==='sev'?'#842029':result.chip==='warn'?'#664d03':'#0f5132';
+      host.innerHTML = `<span class="chip" style="background:${bg};color:${fg}" title="${result.label}">${result.emoji} ${result.label}</span>`;
+    }
+
+    async function loadPagasaSynopsis() {
+      const candidates = [
+        "https://r.jina.ai/http://www.pagasa.dost.gov.ph/weather",
+        "https://r.jina.ai/https://www.pagasa.dost.gov.ph/weather"
+      ];
+      let synopsis = null;
+
+      for (const URL of candidates) {
+        try {
+          const res = await fetch(URL, { cache: "no-store" });
+          if (!res.ok) continue;
+          const page = await res.text();
+
+          const rx = /panel-heading">\s*Synopsis\s*<\/div>\s*<div[^>]*class="panel-body"[^>]*>\s*<p>([\s\S]*?)<\/p>/i;
+          const m  = page.match(rx);
+          if (m && m[1]) { synopsis = m[1].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim(); break; }
+
+          const text = page.replace(/\r/g, "");
+          const idx = text.toLowerCase().indexOf("synopsis");
+          if (idx !== -1) {
+            const after = text.slice(idx);
+            const m2 = after.match(/synopsis.*?\n+(.+?)\n+/i);
+            if (m2 && m2[1]) { synopsis = m2[1].replace(/\s+/g, " ").trim(); break; }
+          }
+        } catch (_) {}
+      }
+
+      const out   = document.getElementById("pagasa-synopsis");
+      const stamp = document.getElementById("pagasa-synopsis-updated");
+
+      if (synopsis) {
+        out.textContent = synopsis;
+        const sev = detectSynopsisSeverity(synopsis || "");
+        renderSeverityChip("synopsis-severity", sev);
+        renderSeverityChip("status-severity",   sev);
+        _synopsisSev = sev;
+        if (_latestOWM) { renderImpacts(_latestOWM); renderActions(_latestOWM, _swbInfo); renderHazardChips(_latestOWM); }
+        stamp.textContent = "Source: PAGASA • " + new Date().toLocaleString("en-PH", { hour12: true });
+      } else {
+        out.textContent = "Synopsis not found on the PAGASA page.";
+        const fallback = { chip: "ok", label: "No data", emoji: "✔️" };
+        renderSeverityChip("synopsis-severity", fallback);
+        renderSeverityChip("status-severity",   fallback);
+        _synopsisSev = fallback;
+        if (_latestOWM) { renderImpacts(_latestOWM); renderActions(_latestOWM, _swbInfo); renderHazardChips(_latestOWM); }
+      }
+    }
+
+    async function loadSWB(){
+      // text proxy to bypass CORS
+      const url = "https://r.jina.ai/https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin";
+      try{
+        const r = await fetch(url,{cache:"no-store"});
+        if(!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        const text = (await r.text()) || "";
+        const lower = text.toLowerCase();
+
+        const tcwsMatches = [...lower.matchAll(/signal\s*(?:no\.?|#)?\s*(\d)/g)].map(m=>parseInt(m[1],10)).filter(Boolean);
+        const tcwsMax = tcwsMatches.length ? Math.max(...tcwsMatches) : 0;
+
+        const affectsLocal = /rizal|metro\s*manila|ncr|san\s*mateo|marikina/i.test(lower);
+        const systemType = (lower.match(/(super\s*typhoon|typhoon|severe\s*tropical\s*storm|tropical\s*storm|tropical\s*depression)/i)||[])[1] || "";
+
+        _swbInfo = { tcwsMax, affectsLocal, systemType };
+      }catch(e){
+        _swbInfo = { tcwsMax:0, affectsLocal:false, systemType:"" };
+        console.warn("SWB fetch error:", e);
+      }finally{
+        if (_latestOWM) { renderActions(_latestOWM, _swbInfo); }
+      }
+    }
+  </script>
+
+  <!-- App scripts -->
+  <script>
+    const OWM_KEY = "662bc47b0b806958a77b4b260951abb8";
+    const LAT = 14.695151709155798, LON = 121.11788215916273;
+
+    /* ---------- Helpers ---------- */
+    const fmtPHTime = (d=new Date()) => new Date(d.toLocaleString("en-US",{timeZone:"Asia/Manila"}));
+    function setPHClock(){
+      const now = fmtPHTime();
+      document.getElementById("ph-time").textContent = now.toLocaleTimeString("en-PH",{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    }
+    setInterval(setPHClock,1000); setPHClock();
+
+    function setUpdated(ts){
+      document.getElementById("last-updated").textContent =
+        fmtPHTime(new Date(ts)).toLocaleString("en-PH",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+    }
+    function msToKph(v=0){ return Math.round(v*3.6); }
+    function toPH(ms){
+      return new Date(ms).toLocaleTimeString("en-PH", {
+        timeZone: "Asia/Manila",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      });
+    }
+    function degToCompass(d=0){
+      const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+      return dirs[Math.round(d/22.5) % 16];
+    }
+    function uvBadgeClass(uvi){
+      if (uvi >= 11) return "bg-uv-extreme";
+      if (uvi >= 8)  return "bg-uv-vhigh";
+      if (uvi >= 6)  return "bg-uv-high";
+      if (uvi >= 3)  return "bg-uv-mod";
+      return "bg-uv-low";
+    }
+
+    /* ---------- Map ---------- */
+    let map;
+    function initMap(){
+      map = L.map("map",{zoomControl:false}).setView([LAT, LON], 17);
+      L.control.zoom({position:"bottomright"}).addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
+
+      const logo = L.control({position:'topleft'});
+      logo.onAdd = () => {
+        const img = L.DomUtil.create('img');
+        img.src = 'https://drive.google.com/thumbnail?id=1MZ_WYY06u3jnNZemFoWCXAqBQradPDOS';
+        img.style.maxWidth = '50px'; img.style.maxHeight='50px';
+        return img;
+      };
+      logo.addTo(map);
+
+      const icon = L.icon({iconUrl:"https://cdn-icons-png.flaticon.com/512/684/684908.png", iconSize:[32,32], iconAnchor:[16,32]});
+      return L.marker([LAT, LON],{icon}).addTo(map);
+    }
+
+    /* ---------- Snapshot helpers (for Impacts & Chips) ---------- */
+    function analyzeWeather(data){
+      const h24 = (data.hourly ?? []).slice(0,24);
+      const d0  = (data.daily  ?? [])[0] || {};
+
+      const rain24 = h24.reduce((s,h)=> s + (h.rain?.["1h"] || 0), 0) || d0.rain || 0;
+      const popMax = Math.round(Math.max(...h24.map(h => h.pop ?? 0), 0) * 100);
+      const hasThunder = h24.some(h => {
+        const id = h.weather?.[0]?.id || 0;
+        return (id >= 200 && id < 300) || /thunder/i.test(h.weather?.[0]?.main || "");
+      });
+      const windMax = Math.max(...h24.map(h => h.wind_speed ?? 0), 0);
+      const gustMax = Math.max(...h24.map(h => h.wind_gust  ?? 0), 0);
+      const uviMax   = Math.max(...h24.map(h => h.uvi ?? -1), d0.uvi ?? -1, -1);
+
+      const rainLevel = (rain24 >= 60 || popMax >= 90) ? "sev" : (rain24 >= 30 || popMax >= 70) ? "warn" : (popMax >= 40 || rain24 >= 5) ? "ok" : "none";
+      const windLevel = msToKph(gustMax) >= 75 ? "sev" : msToKph(gustMax) >= 50 ? "warn" : msToKph(gustMax) >= 35 ? "ok" : "none";
+      const uvLevel   = uviMax >= 8 ? "warn" : uviMax >= 6 ? "ok" : "none";
+
+      return { rain24, popMax, hasThunder, windK: msToKph(windMax), gustK: msToKph(gustMax), uviMax, rainLevel, windLevel, uvLevel };
+    }
+
+    function renderHazardChips(data){
+      const wrap = document.getElementById('alert-chips');
+      if (!wrap || !data) return;
+      wrap.innerHTML = '';
+      const chips = [];
+
+      (data.alerts || []).forEach(a => {
+        const label = (a.event || 'Weather alert').replace(/\s+/g,' ').trim();
+        chips.push({ lvl:'sev', text: label, emoji:'⚠️' });
+      });
+      if (_synopsisSev && _synopsisSev.score > 0) {
+        chips.push({
+          lvl: _synopsisSev.score === 2 ? 'sev' : 'warn',
+          text: _synopsisSev.label,
+          emoji: _synopsisSev.emoji
+        });
+      }
+
+      const a = analyzeWeather(data);
+      if (a.rainLevel === 'sev')       chips.push({ lvl:'sev',  text:'Heavy rain',     emoji:'🌧️' });
+      else if (a.rainLevel === 'warn') chips.push({ lvl:'warn', text:'Rain likely',    emoji:'🌦️' });
+      if (a.hasThunder)                chips.push({ lvl:'warn', text:'Thunderstorms',  emoji:'⛈️' });
+      if (a.windLevel === 'sev')       chips.push({ lvl:'sev',  text:'Strong winds',   emoji:'🌬️' });
+      else if (a.windLevel === 'warn') chips.push({ lvl:'warn', text:'Gusty winds',    emoji:'🌬️' });
+      if (a.uvLevel === 'warn')        chips.push({ lvl:'warn', text:'High UV',        emoji:'☀️' });
+
+      if (!chips.length) { wrap.innerHTML = `<span class="chip" style="background:#d1e7dd;color:#0f5132">✔️ No active alerts</span>`; return; }
+      chips.slice(0,5).forEach(c => {
+        const span = document.createElement('span');
+        span.className = `chip`;
+        span.style.background = c.lvl==='sev'?'#f8d7da':c.lvl==='warn'?'#fff3cd':'#d1e7dd';
+        span.style.color      = c.lvl==='sev'?'#842029':c.lvl==='warn'?'#664d03':'#0f5132';
+        span.textContent = `${c.emoji} ${c.text}`;
+        wrap.appendChild(span);
+      });
+    }
+
+    function renderImpacts(data){
+      const el = document.getElementById("impacts");
+      if (!data || !el) return;
+
+      const c = data.current || {};
+      const a = analyzeWeather(data);
+      const items = [];
+
+      // impacts reflect current/near-term signals to give context to "Actions"
+      if ((c.rain && c.rain["1h"]>0) || /rain|thunder/i.test(c.weather?.[0]?.main||"")) {
+        items.push(`🌧️ Rain ongoing/nearby; POP next hours up to ${a.popMax}%`);
+      }
+      if (a.hasThunder) items.push(`⛈️ Thunderstorms possible; brief heavy downpours.`);
+      if (c.wind_gust || a.windK>0) {
+        items.push(`🌬️ Wind ${msToKph(c.wind_speed||0)}–${msToKph(c.wind_gust||0)} kph now; higher gusts possible later.`);
+      }
+      if (typeof c.uvi === "number" && c.uvi >= 6) items.push(`☀️ High UV around midday.`);
+
+      if (_synopsisSev?.label === "Monsoon") items.push(`🌧️ Monsoon in effect per PAGASA Synopsis.`);
+      if (_synopsisSev?.label === "Tropical Cyclone") items.push(`🌀 Tropical cyclone in PAGASA products.`);
+
+      el.innerHTML = items.length ? `<ul class="mb-0 small">${items.map(i=>`<li>${i}</li>`).join("")}</ul>` : `<div class="small-muted">No significant current impacts.</div>`;
+    }
+
+    // === ACTIONS (current + PAGASA only)
+    function renderActions(data, swb){
+      const ul = document.getElementById("actions-list");
+      if (!ul || !data) return;
+
+      const c = data.current || {};
+      const nowRainMM = (c.rain && c.rain["1h"]) ? c.rain["1h"] : 0;
+      const nowThunder = (()=>{ const id = c.weather?.[0]?.id||0; return id>=200 && id<300; })();
+      const gustK = msToKph(c.wind_gust||0);
+      const windK = msToKph(c.wind_speed||0);
+      const highUV = typeof c.uvi === "number" && c.uvi >= 6;
+
+      const syn = _synopsisSev || {score:0,label:""};
+      const swbInfo = swb || {tcwsMax:0,affectsLocal:false,systemType:""};
+
+      // Determine EOC posture ONLY from the three sources
+      let eoc = "Blue";
+      if (swbInfo.affectsLocal && swbInfo.tcwsMax >= 1) eoc = "Yellow";
+      if (swbInfo.affectsLocal && swbInfo.tcwsMax >= 2) eoc = "Orange";
+      if (swbInfo.affectsLocal && swbInfo.tcwsMax >= 3) eoc = "Red";
+      if (syn.label === "Monsoon" && (nowRainMM >= 5 || nowThunder)) eoc = (eoc==="Blue"?"Yellow":eoc);
+
+      const cadence = (eoc==="Red")?"hourly":(eoc==="Orange")?"every 2 hrs":(eoc==="Yellow")?"every 3–6 hrs":"per shift";
+
+      const actions = [];
+
+      // EOC / Coordination (only if any trigger exists)
+      const anyTrigger = (nowRainMM>0 || nowThunder || gustK>=40 || syn.score>0 || (swbInfo.affectsLocal && swbInfo.tcwsMax>0));
+      if (anyTrigger) {
+        actions.push(`📟 <strong>EOC:</strong> <span class="kbd">${eoc}</span> • monitoring ${cadence}; align with latest PAGASA Synopsis/SWB.`);
+      }
+
+      // SWB-triggered actions (only if SWB mentions Rizal/NCR)
+      if (swbInfo.affectsLocal && swbInfo.tcwsMax > 0) {
+        const L = swbInfo.tcwsMax;
+        const sys = swbInfo.systemType ? swbInfo.systemType.toUpperCase() : "TCWS";
+        if (L===1) {
+          actions.push(`🌀 <strong>SWB:</strong> ${sys} • TCWS #1 affecting area. Secure loose outdoor items, monitor river levels and PAGASA updates.`);
+        } else if (L===2) {
+          actions.push(`🌀 <strong>SWB:</strong> ${sys} • TCWS #2. Preposition pumps/boats and road barricades; advise early dismissal of outdoor events; check backup power/ comms.`);
+        } else if (L>=3) {
+          actions.push(`🌀 <strong>SWB:</strong> ${sys} • TCWS #${L}. Consider pre-emptive evacuation of flood-prone river easements; suspend large outdoor activities; keep rescue & shelters on standby.`);
+        }
+      } else if (syn.label === "Tropical Cyclone") {
+        actions.push(`🌀 PAGASA notes a tropical cyclone. Track SWB updates; actions escalate once TCWS includes Rizal/NCR.`);
+      }
+
+      // Monsoon/LPA from Synopsis
+      if (syn.label === "Monsoon" || syn.label === "LPA") {
+        actions.push(`🌧️ <strong>${syn.label}:</strong> Expect on/off rains; clear drainage; keep vehicles out of flood-prone streets; ready pumps at known hotspots.`);
+      }
+
+      // Current rain / thunder
+      if (nowRainMM >= 10) {
+        actions.push(`🚧 <strong>Heavy rain now (${nowRainMM.toFixed(1)} mm/hr)</strong>: avoid waterways/bridges; move vehicles to higher ground; deploy quick drainage clearing.`);
+      } else if (nowRainMM >= 2) {
+        actions.push(`🌦️ Rain ongoing: caution for slick roads & localized flooding; put warning cones on low-lying segments.`);
+      }
+      if (nowThunder) {
+        actions.push(`⚡ Thunderstorms nearby: suspend outdoor sports/PE, construction at heights, and riverbank activities; seek sturdy shelter.`);
+      }
+
+      // Current wind / gusts
+      if (gustK >= 80) {
+        actions.push(`🌬️ Gusts ~${gustK} kph: postpone large outdoor events; secure scaffolding/tarpaulins/signage; restrict small craft/river use.`);
+      } else if (gustK >= 60) {
+        actions.push(`🌬️ Gusty winds ~${gustK} kph: tie down tarps, check construction sites and temporary structures; trim hazard branches near lines.`);
+      } else if (windK >= 35) {
+        actions.push(`🍃 Windy now (${windK} kph): secure light objects and roadside fixtures.`);
+      }
+
+      // UV
+      if (highUV) {
+        actions.push(`🕶️ UV ${c.uvi}: sun protection 10am–3pm (hat, sunscreen); provide shade & hydration for outdoor crews.`);
+      }
+
+      // If no triggers at all, say so simply
+      if (!actions.length) {
+        actions.push(`✅ No immediate action required based on <em>current weather</em>, <em>PAGASA Synopsis</em>, and <em>PAGASA SWB</em>. Continue routine monitoring.`);
+      }
+
+      ul.innerHTML = actions.map(a => `<li>${a}</li>`).join("");
+    }
+
+    /* ---------- Current Weather renderer ---------- */
+    function renderCurrent(data){
+      const c = data.current;
+
+      // hero + numbers
+      document.getElementById("current-temp").textContent = Math.round(c.temp) + "°C";
+      document.getElementById("feels-like").textContent = Math.round(c.feels_like);
+      document.getElementById("current-desc").textContent = c.weather?.[0]?.description ?? "—";
+      document.getElementById("main-icon").src = `https://openweathermap.org/img/wn/${c.weather?.[0]?.icon}@2x.png`;
+
+      const windMS  = c.wind_speed ?? 0;
+      const windKPH = Math.round(windMS * 3.6);
+      document.getElementById("wind").textContent = windMS.toFixed(1);
+      document.getElementById("wind-kph").textContent = windKPH;
+      document.getElementById("wind-dir").style.transform = `rotate(${(c.wind_deg ?? 0)}deg)`;
+      document.getElementById("wind-dir").title = `${c.wind_deg ?? 0}° ${degToCompass(c.wind_deg ?? 0)}`;
+      document.getElementById("gust").textContent = `Gusts ${c.wind_gust ? Math.round(c.wind_gust*3.6) : "—"} kph`;
+
+      document.getElementById("humidity").textContent = c.humidity ?? "—";
+      document.getElementById("pressure").textContent = c.pressure ?? "—";
+      document.getElementById("vis").textContent = ((c.visibility ?? 0)/1000).toFixed(1);
+      document.getElementById("dew").textContent = Math.round(c.dew_point ?? 0);
+      document.getElementById("clouds").textContent = c.clouds ?? "—";
+
+      // rain prob (first hourly as immediate proxy)
+      let rp = "—";
+      if (Array.isArray(data.hourly) && data.hourly[0]?.pop != null) rp = Math.round((data.hourly[0].pop || 0) * 100);
+      else if (c.rain) rp = 100;
+      document.getElementById("rain-prob").textContent = rp;
+
+      // UV
+      const uv = c.uvi ?? 0;
+      const badge = document.getElementById("uv-badge");
+      document.getElementById("uv").textContent = uv;
+      badge.className = "badge rounded-pill px-3 py-2 " + uvBadgeClass(uv);
+
+      // Sunrise / sunset (PH time)
+      if (c.sunrise && c.sunset) {
+        document.getElementById("sunrise").textContent = toPH(c.sunrise * 1000);
+        document.getElementById("sunset").textContent  = toPH(c.sunset  * 1000);
+      }
+
+      // Day/night gradient
+      const hero = document.querySelector(".weather-hero");
+      if (hero && c.sunrise && c.sunset) {
+        const now = c.dt ? c.dt*1000 : Date.now();
+        const isDay = now > c.sunrise*1000 && now < c.sunset*1000;
+        hero.classList.toggle("night", !isDay);
+      }
+
+      // Sitrep + chips
+      document.getElementById("sitrep").textContent =
+        `Temp ${Math.round(c.temp)}°C, ${c.weather?.[0]?.main || "—"}; wind ${windMS.toFixed(1)} m/s; RH ${c.humidity}%`;
+
+      renderHazardChips(data);
+    }
+
+    /* ---------- Hourly Chart (animated NOW line) ---------- */
+    function renderHourlyChart(hourly){
+      const canvas = document.getElementById("hourlyChart");
+      const ctx = canvas.getContext("2d");
+
+      const hours  = hourly.slice(0,12);
+      const labels = hours.map(h => new Date(h.dt*1000).toLocaleTimeString("en-US",{hour:"2-digit", minute:"2-digit", hour12:true}));
+      const temps  = hours.map(h => h.temp);
+      const pops   = hours.map(h => Math.round((h.pop || 0) * 100));
+
+      const nowLinePlugin = {
+        id: "nowLine",
+        beforeDraw(chart){
+          const c = chart.ctx, xAxis = chart.scales.x, yAxis = chart.scales.y, lbls  = chart.data.labels;
+          const nowPH = fmtPHTime();
+          const nowLabel = nowPH.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true});
+
+          let closestIndex = 0, minDiff = Infinity;
+          for (let i=0;i<lbls.length;i++){
+            const labelTime = new Date("2000-01-01 " + lbls[i]);
+            const nowTime   = new Date("2000-01-01 " + nowLabel);
+            const diff = Math.abs(labelTime - nowTime);
+            if (diff < minDiff) { minDiff = diff; closestIndex = i; }
+          }
+          const targetX = xAxis.getPixelForTick(closestIndex);
+          if (!chart._nowLineX) chart._nowLineX = targetX;
+          chart._nowLineX += (targetX - chart._nowLineX) * 0.12;
+
+          const hr = nowPH.getHours();
+          const lineColor = (hr >= 19 || hr < 6) ? "#42a5f5" : "#e53935";
+
+          c.save();
+          c.beginPath();
+          c.moveTo(chart._nowLineX, yAxis.top);
+          c.lineTo(chart._nowLineX, yAxis.bottom);
+          c.lineWidth = 2; c.setLineDash([3,4]); c.strokeStyle = lineColor; c.stroke();
+          c.fillStyle = lineColor; c.font = "bold 11px Inter, Arial, sans-serif"; c.textAlign = "center";
+          c.fillText("NOW", chart._nowLineX, yAxis.top + 12);
+          c.restore();
+        }
+      };
+
+      const tempFill = (ctxArg) => {
+        const chart = ctxArg.chart, area = chart.chartArea;
+        if (!area) return "rgba(255, 87, 34, 0.25)";
+        const g = chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+        g.addColorStop(0, "rgba(255, 87, 34, 0.5)");
+        g.addColorStop(1, "rgba(255, 235, 59, 0.2)");
+        return g;
+      };
+
+      if (window._hourlyChart) try { window._hourlyChart.destroy(); } catch(_){}
+
+      window._hourlyChart = new Chart(ctx,{
+        type:"line",
+        plugins:[nowLinePlugin],
+        data:{
+          labels,
+          datasets:[
+            { type:"line", label:"Temperature (°C)", data:temps, yAxisID:"y",
+              borderColor:"rgba(255,87,34,1)", backgroundColor: tempFill, tension:.4, fill:true,
+              pointRadius:3, pointHoverRadius:5 },
+            { type:"line", label:"Rain Probability (%)", data:pops, yAxisID:"y1",
+              borderColor:"rgba(30,136,229,1)", backgroundColor:"rgba(30,136,229,0.20)",
+              tension:.35, fill:true, pointRadius:3, pointHoverRadius:5 }
+          ]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ labels:{ color:"#333", font:{ size:11, weight:"bold" } } },
+            tooltip:{ backgroundColor:"rgba(50,50,50,0.9)", titleColor:"#fff", bodyColor:"#eee",
+              borderColor:"#999", borderWidth:1, cornerRadius:8, padding:12,
+              callbacks:{
+                label:(ctx)=>{
+                  const i = ctx.dataIndex;
+                  if (ctx.dataset.label.includes("Temperature")) {
+                    const h = hours[i]; return `Temp: ${h.temp.toFixed(1)}°C (Feels: ${h.feels_like?.toFixed ? h.feels_like.toFixed(1) : "—"}°C)`;
+                  }
+                  if (ctx.dataset.label.includes("Rain Probability")) { return `Rain Probability: ${pops[i]}%`; }
+                }
+              } } },
+          interaction:{ mode:"index", intersect:false },
+          scales:{
+            x:{ ticks:{ color:"#333" }, grid:{ color:"#eee" } },
+            y:{ beginAtZero:true, title:{ display:true, text:"Temperature (°C)", color:"#333" }, ticks:{ color:"#333" }, grid:{ color:"#eee" } },
+            y1:{ beginAtZero:true, position:"right", title:{ display:true, text:"Rain Probability (%)", color:"#333" }, ticks:{ color:"#333" }, grid:{ drawOnChartArea:false, color:"#ccc" } }
+          }
+        }
+      });
+
+      setInterval(()=> window._hourlyChart?.update(), 1000);
+    }
+
+    /* ---------- Daily Summary (PAGASA-style) ---------- */
+    function cloudsText(p){
+      if (p>=90) return "overcast";
+      if (p>=70) return "mostly cloudy";
+      if (p>=40) return "partly cloudy";
+      if (p>=20) return "mostly sunny";
+      return "sunny";
+    }
+    function buildDailySummary(day, hourly){
+      const main = (day.weather?.[0]?.main || "").toLowerCase();
+      const desc = (day.weather?.[0]?.description || "").toLowerCase();
+      const clouds = day.clouds ?? 0;
+      const popDay = Math.round((day.pop || 0) * 100);
+      const rainMM = day.rain || 0;
+
+      const target = new Date(day.dt * 1000).toLocaleDateString("en-PH", { timeZone:"Asia/Manila" });
+      const hrs = (hourly || []).filter(h =>
+        new Date(h.dt*1000).toLocaleDateString("en-PH",{ timeZone:"Asia/Manila" }) === target
+      );
+
+      const morning = hrs.filter(h => {
+        const hr = parseInt(new Date(h.dt*1000).toLocaleTimeString("en-PH",{hour12:false,hour:"2-digit",timeZone:"Asia/Manila"}),10);
+        return hr>=6 && hr<12;
+      });
+      const afternoon = hrs.filter(h => {
+        const hr = parseInt(new Date(h.dt*1000).toLocaleTimeString("en-PH",{hour12:false,hour:"2-digit",timeZone:"Asia/Manila"}),10);
+        return hr>=12 && hr<18;
+      });
+      const avg = arr => arr.length ? (arr.reduce((s,h)=> s+(h.pop||0),0)/arr.length) : 0;
+      const popAM = Math.round(avg(morning)*100);
+      const popPM = Math.round(avg(afternoon)*100);
+
+      if (main.includes("thunderstorm")) return "Thunderstorms likely with periods of rain.";
+      if (rainMM >= 30 || popDay >= 90)  return "There will be rain today.";
+      if (popAM >= 60 && popPM < 40) return `You can expect rain in the morning, with ${cloudsText(clouds)} in the afternoon.`;
+      if (popPM >= 60 && popAM < 40) return `Mostly dry in the morning, with rain in the afternoon or evening.`;
+      if (popDay >= 40) return `Expect a day of ${cloudsText(clouds)} with rain.`;
+      if (main.includes("clear")) return "Expect a sunny day.";
+      return `Expect a ${cloudsText(clouds)} day.`;
+    }
+    function iconUrl(code){ return `https://openweathermap.org/img/wn/${code}.png`; }
+    function renderDailyTable(daily, hourly){
+      const tbody = document.getElementById("forecastTableBody");
+      tbody.innerHTML = daily.slice(0,7).map(day=>{
+        const date = new Date(day.dt * 1000).toLocaleDateString("en-PH", { weekday:'short', month:'short', day:'numeric' });
+        const icon = iconUrl(day.weather?.[0]?.icon || "01d");
+        const summary = buildDailySummary(day, hourly);
+
+        return `
+          <tr>
+            <td>${date}</td>
+            <td class="text-start">${summary}</td>
+            <td><img src="${icon}" alt="${day.weather?.[0]?.description||''}" width="32" height="32"></td>
+            <td>${day.temp.min.toFixed(1)} / ${day.temp.max.toFixed(1)}</td>
+            <td>${day.feels_like.day.toFixed(1)} / ${day.feels_like.night.toFixed(1)}</td>
+            <td>${day.humidity}%</td>
+            <td>${day.pressure} hPa</td>
+            <td>${day.clouds}%</td>
+            <td>${(day.wind_speed||0).toFixed(1)} / ${day.wind_gust ? day.wind_gust.toFixed(1) : '–'}</td>
+            <td>${((day.pop||0)*100).toFixed(0)}%</td>
+            <td>${day.rain ? day.rain.toFixed(1) : '0.0'}</td>
+            <td>${day.uvi ?? '—'}</td>
+          </tr>`;
+      }).join("");
+    }
+
+    /* ---------- Data loader ---------- */
+    async function loadAll(){
+      try{
+        const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${LAT}&lon=${LON}&appid=${OWM_KEY}&units=metric`;
+        const res = await fetch(url);
+        if(!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const data = await res.json();
+
+        _latestOWM = data;
+        setUpdated((data.current?.dt || Date.now())*1000);
+
+        const marker = initMap();
+        const icon = data.current?.weather?.[0]?.icon;
+        const temp = Math.round(data.current?.temp ?? 0);
+        const desc = data.current?.weather?.[0]?.description || "";
+        marker.bindPopup(`
+          <div class="text-center">
+            <strong>San Mateo</strong><br>
+            <span>${temp}°C – ${desc}</span><br>
+            <img src="${iconUrl(icon)}" alt="" height="40">
+          </div>
+        `).openPopup();
+
+        // Render bits that don't depend on SWB yet
+        renderCurrent(data);
+        renderHourlyChart(data.hourly || []);
+        renderDailyTable(data.daily || [], data.hourly || []);
+        renderImpacts(data);
+        renderHazardChips(data);
+
+        // Load PAGASA text sources and then finalize Actions
+        await loadPagasaSynopsis();
+        await loadSWB();
+        renderActions(_latestOWM, _swbInfo);
+      }catch(e){
+        const alert = document.createElement("div");
+        alert.className = "alert alert-warning alert-dismissible fade show";
+        alert.role = "alert";
+        alert.innerHTML = `⚠️ OpenWeather fetch error: ${e?.message || e} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.querySelector("main").prepend(alert);
+      }
+    }
+    loadAll();
+
+    /* ---------- Image modal (zoom) ---------- */
+    (() => {
+      const imageModal = document.getElementById('imageModal');
+      const modalImage = document.getElementById('modalImage');
+      const fitToggleBtn = document.getElementById('fitToggleBtn');
+      const resetZoomBtn = document.getElementById('resetZoomBtn');
+      const zoomInBtn = document.getElementById('zoomInBtn');
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+      let panzoomInstance;
+
+      document.querySelectorAll('[data-bs-toggle="modal"][data-image]').forEach(a=>{
+        a.addEventListener('click', ()=> { modalImage.src = a.getAttribute('data-image'); });
+      });
+
+      imageModal.addEventListener('shown.bs.modal', ()=>{
+        if (panzoomInstance) panzoomInstance.destroy();
+        panzoomInstance = Panzoom(modalImage, { contain:'outside', maxScale:5, minScale:1 });
+        modalImage.parentElement.addEventListener('wheel', panzoomInstance.zoomWithWheel);
+      });
+
+      zoomInBtn.addEventListener('click', ()=> panzoomInstance && panzoomInstance.zoomIn());
+      zoomOutBtn.addEventListener('click', ()=> panzoomInstance && panzoomInstance.zoomOut());
+      resetZoomBtn.addEventListener('click', ()=> panzoomInstance && panzoomInstance.reset());
+      fitToggleBtn.addEventListener('click', ()=>{
+        if (modalImage.classList.contains('fit-height')) {
+          modalImage.classList.remove('fit-height'); modalImage.classList.add('fit-width'); fitToggleBtn.textContent='Fit';
+        } else {
+          modalImage.classList.remove('fit-width'); modalImage.classList.add('fit-height'); fitToggleBtn.textContent='Fit';
+        }
+        panzoomInstance && panzoomInstance.reset();
+      });
+    })();
+  </script>
+</body>
+</html>
