@@ -366,13 +366,55 @@
 </div>
         <div class="alert alert-warning py-2 small mb-3">
 
-          <!-- DOST-PAG ASA live-->
+          <!-- DOST-PAG ASA live
           <iframe
           src="https://www.youtube.com/embed/MO287pziST4"
           title="DOST-PAGASA Live"
           width="100%" height="520" style="border:0;" loading="lazy">
-        </iframe>
+        </iframe>-->
 
+<div class="col-md-5 youtube-container">
+  <div class="panel-heading d-flex justify-content-between align-items-center">
+    <a href="https://www.youtube.com/@DOST_PAGASA/featured" target="_blank" style="color:#22313f;">Home</a>
+    <small id="ytUpdated" class="text-muted"></small>
+  </div>
+  <iframe id="ytFeatured" width="100%" height="250" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+</div>
+
+<script>
+(async function loadFeatured() {
+  const frame = document.getElementById('ytFeatured');
+  const stamp = document.getElementById('ytUpdated');
+  const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxHGn5KTWD-joEAANOeFwRL5yF_Zew-BfJJnSS60paPMaMPzh-6UJm_cm7ocbMtPoAh/exec';
+
+  async function refresh() {
+    try {
+      const r = await fetch(ENDPOINT + '?cb=' + Date.now());
+      const { ok, videoId } = await r.json();
+      if (ok && videoId) {
+        frame.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
+        stamp.textContent = 'Auto-refreshed • ' +
+          new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+        return;
+      }
+      // Fallback to live endpoint if parsing fails
+      frame.src = 'https://www.youtube.com/embed/live_stream?channel=UCpyLikj1x70S8UPxVqsPr6g&rel=0';
+    } catch (e) {
+      frame.src = 'https://www.youtube.com/embed/live_stream?channel=UCpyLikj1x70S8UPxVqsPr6g&rel=0';
+    }
+  }
+
+  await refresh();
+  setInterval(refresh, 60 * 60 * 1000); // refresh every hour
+})();
+</script>
+
+</script>
+
+</div>
+    <!-- PAGASA Weather Maps -->
         <div class="row g-3 mt-2">
           <div class="col-6 col-lg-3">
             <div class="card h-100">
