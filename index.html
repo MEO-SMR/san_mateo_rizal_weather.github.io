@@ -94,6 +94,20 @@
 
     .small-muted{font-size:.95rem; color:#6b7280}
     .kbd{padding:.05rem .4rem; border-radius:.25rem; background:#000; color:#fff; font-size:.75rem}
+
+    /* --- Alerts & Imagery tabs --- */
+.tab-embed{width:100%;height:65vh;min-height:520px;border:0}
+.embed-wrap{position:relative}
+.embed-loading{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.7));
+  z-index:2;font-weight:600;color:#374151
+}
+@media (max-width:768px){ .tab-embed{height:72vh} }
+    /* Footer */
+    footer{background:#f8f9fa; color:#6b7280; font-size:.9rem;}
+    footer a{color:var(--brand-blue); text-decoration:none;}
+    footer a:hover{text-decoration:underline;}
   </style>
 </head>
 
@@ -269,24 +283,95 @@
       </div>
     </div>
 
-    <!-- Alerts & Imagery (+ SWB in iframe for reference) -->
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header bg-danger text-white">PAGASA Alerts & Imagery</div>
-      <div class="card-body">
-        <div class="alert alert-info py-2 small mb-2">
+
+<!-- PAGASA Alerts & Imagery (3 tabs) -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-danger text-white fw-bold">PAGASA Alerts & Imagery</div>
+  <div class="card-body">
+
+           <div class="alert alert-info py-2 small mb-2">
           If the Severe Weather Bulletin cannot load here, open in a new tab:
           <a class="fw-semibold" target="_blank" href="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin">PAGASA SWB</a>.
         </div>
-        <iframe
-          src="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin"
-          title="PAGASA Severe Weather Bulletin"
-          width="100%" height="520" style="border:0;" loading="lazy"></iframe>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" id="alertsTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-swb-btn" data-bs-toggle="tab"
+                data-bs-target="#tab-swb" type="button" role="tab" aria-controls="tab-swb"
+                aria-selected="true">🌀 Severe Weather Bulletin</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-ffwws-btn" data-bs-toggle="tab"
+                data-bs-target="#tab-ffwws" type="button" role="tab" aria-controls="tab-ffwws"
+                aria-selected="false">💧 FFWWS</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-windy-btn" data-bs-toggle="tab"
+                data-bs-target="#tab-windy" type="button" role="tab" aria-controls="tab-windy"
+                aria-selected="false">🌬️ Windy</button>
+      </li>
+    </ul>
+
+    <!-- Panes -->
+    <div class="tab-content border border-top-0 rounded-bottom">
+      <!-- SWB -->
+      <div class="tab-pane fade show active p-2" id="tab-swb" role="tabpanel" aria-labelledby="tab-swb-btn">
+        <div class="d-flex justify-content-end">
+          <a class="btn btn-sm btn-outline-light text-dark" target="_blank"
+             href="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin">Open SWB ↗</a>
+        </div>
+        <div class="embed-wrap">
+          <div class="embed-loading" id="swb-loader">Loading SWB…</div>
+          <iframe class="tab-embed" title="PAGASA SWB" id="swb-iframe"
+            src="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin"></iframe>
+        </div>
+        <div class="small text-muted mt-2">
+          If the bulletin does not display (site may block embedding), use the “Open SWB” button.
+        </div>
+      </div>
+
+      <!-- FFWWS -->
+      <div class="tab-pane fade p-2" id="tab-ffwws" role="tabpanel" aria-labelledby="tab-ffwws-btn">
+        <div class="d-flex justify-content-end">
+          <a class="btn btn-sm btn-outline-light text-dark" target="_blank"
+             href="https://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/">Open FFWWS ↗</a>
+        </div>
+        <div class="embed-wrap">
+          <div class="embed-loading" id="ffwws-loader">Loading FFWWS…</div>
+          <iframe class="tab-embed" title="FFWWS Map" id="ffwws-iframe"
+            src="https://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/"></iframe>
+        </div>
+        <div class="small text-muted mt-2">
+          Tip: In <strong>Map Legend</strong>, enable <em>Water Level</em> & <em>Rainfall</em>. Watch
+          <em>San Mateo-1</em> (WL) and <em>San Mateo-2</em> (RF) in the station list.
+        </div>
+      </div>
+
+      <!-- Windy -->
+      <div class="tab-pane fade p-2" id="tab-windy" role="tabpanel" aria-labelledby="tab-windy-btn">
+        <div class="d-flex justify-content-end">
+          <a class="btn btn-sm btn-outline-light text-dark" target="_blank"
+             href="https://embed.windy.com/">Open Windy ↗</a>
+        </div>
+        <div class="embed-wrap">
+          <div class="embed-loading" id="windy-loader">Loading Windy…</div>
+          <iframe class="tab-embed" title="Windy Layers" id="windy-iframe"
+            src="https://embed.windy.com/embed2.html?lat=14.69&lon=121.12&detailLat=14.69&detailLon=121.12&zoom=6&level=surface&overlay=wind&marker=true&pressure=true&model=icon&menu=&message="></iframe>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+        <div class="alert alert-warning py-2 small mb-3">
 
           <!-- DOST-PAG ASA live-->
-                   <iframe
+          <iframe
           src="https://www.youtube.com/embed/MO287pziST4"
           title="DOST-PAGASA Live"
-          width="100%" height="520" style="border:0;" loading="lazy"></iframe>
+          width="100%" height="520" style="border:0;" loading="lazy">
+        </iframe>
 
         <div class="row g-3 mt-2">
           <div class="col-6 col-lg-3">
@@ -361,6 +446,26 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+  // Responsive height for embeds
+  function sizeEmbeds(){
+    const h = Math.max(520, Math.round(window.innerHeight * 0.72));
+    document.querySelectorAll(".tab-embed").forEach(el => el.style.height = h + "px");
+  }
+  sizeEmbeds();
+  window.addEventListener("resize", sizeEmbeds);
+
+  // Simple loaders (hide when iframe loads or after 8s fallback)
+  ["swb","ffwws","windy"].forEach(id=>{
+    const iframe = document.getElementById(id+"-iframe");
+    const loader = document.getElementById(id+"-loader");
+    if(!iframe || !loader) return;
+    iframe.addEventListener("load", ()=> loader.style.display="none", { once:true });
+    setTimeout(()=> loader.style.display="none", 8000);
+  });
+</script>
+
 
   <!-- PAGASA Synopsis + SWB parsers -->
   <script>
