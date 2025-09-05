@@ -1,0 +1,8 @@
+LAT = 14.695151709155798,
+LON = 121.11788215916273,
+ENDPOINT = 'https://script.google.com/macros/s/AKfycbz7X5XTCoUREekGuZsVlInOsxmOvpKvky1CcSD5JgLwMsttpfFgj_JBJt5MeZW9RUzH/exec'
+
+
+
+
+
