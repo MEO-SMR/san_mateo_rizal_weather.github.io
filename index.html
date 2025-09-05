@@ -96,20 +96,20 @@
     .kbd{padding:.05rem .4rem; border-radius:.25rem; background:#000; color:#fff; font-size:.75rem}
 
     /* --- Alerts & Imagery tabs --- */
-.tab-embed{width:100%;height:65vh;min-height:520px;border:0}
-.embed-wrap{position:relative}
-.embed-loading{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.7));
-  z-index:2;font-weight:600;color:#374151
-}
-@media (max-width:768px){ .tab-embed{height:72vh} }
+    .tab-embed{width:100%;height:65vh;min-height:520px;border:0}
+    .embed-wrap{position:relative}
+    .embed-loading{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.7));
+      z-index:2;font-weight:600;color:#374151
+    }
+    @media (max-width:768px){ .tab-embed{height:72vh} }
     /* Footer */
     footer{background:#f8f9fa; color:#6b7280; font-size:.9rem;}
     footer a{color:var(--brand-blue); text-decoration:none;}
     footer a:hover{text-decoration:underline;}
 
- #ytFeatured { width: 100%; aspect-ratio: 16 / 9; height: auto; border:0; display:block; }   
+    #ytFeatured { width: 100%; aspect-ratio: 16 / 9; height: auto; border:0; display:block; }   
   </style>
 </head>
 
@@ -285,164 +285,135 @@
       </div>
     </div>
 
+    <!-- PAGASA Alerts & Imagery (3 tabs) -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-danger text-white fw-bold">PAGASA Alerts & Imagery</div>
+      <div class="card-body">
 
-<!-- PAGASA Alerts & Imagery (3 tabs) -->
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-header bg-danger text-white fw-bold">PAGASA Alerts & Imagery</div>
-  <div class="card-body">
-
-           <div class="alert alert-info py-2 small mb-2">
+        <div class="alert alert-info py-2 small mb-2">
           If the Severe Weather Bulletin cannot load here, open in a new tab:
           <a class="fw-semibold" target="_blank" href="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin">PAGASA SWB</a>.
         </div>
 
-    <!-- Tabs -->
-    <ul class="nav nav-tabs" id="alertsTabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="tab-swb-btn" data-bs-toggle="tab"
-                data-bs-target="#tab-swb" type="button" role="tab" aria-controls="tab-swb"
-                aria-selected="true">🌀 Severe Weather Bulletin</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-ffwws-btn" data-bs-toggle="tab"
-                data-bs-target="#tab-ffwws" type="button" role="tab" aria-controls="tab-ffwws"
-                aria-selected="false">💧 FFWWS</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-windy-btn" data-bs-toggle="tab"
-                data-bs-target="#tab-windy" type="button" role="tab" aria-controls="tab-windy"
-                aria-selected="false">🌬️ Windy</button>
-      </li>
-    </ul>
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" id="alertsTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-swb-btn" data-bs-toggle="tab"
+                    data-bs-target="#tab-swb" type="button" role="tab" aria-controls="tab-swb"
+                    aria-selected="true">🌀 Severe Weather Bulletin</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-ffwws-btn" data-bs-toggle="tab"
+                    data-bs-target="#tab-ffwws" type="button" role="tab" aria-controls="tab-ffwws"
+                    aria-selected="false">💧 FFWWS</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-windy-btn" data-bs-toggle="tab"
+                    data-bs-target="#tab-windy" type="button" role="tab" aria-controls="tab-windy"
+                    aria-selected="false">🌬️ Windy</button>
+          </li>
+        </ul>
 
-    <!-- Panes -->
-    <div class="tab-content border border-top-0 rounded-bottom">
-      <!-- SWB -->
-      <div class="tab-pane fade show active p-2" id="tab-swb" role="tabpanel" aria-labelledby="tab-swb-btn">
-        <div class="d-flex justify-content-end">
-          <a class="btn btn-sm btn-outline-light text-dark" target="_blank"
-             href="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin">Open SWB ↗</a>
-        </div>
-        <div class="embed-wrap">
-          <div class="embed-loading" id="swb-loader">Loading SWB…</div>
-          <iframe class="tab-embed" title="PAGASA SWB" id="swb-iframe"
-            src="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin"></iframe>
-        </div>
-        <div class="small text-muted mt-2">
-          If the bulletin does not display (site may block embedding), use the “Open SWB” button.
-        </div>
-      </div>
+        <!-- Panes -->
+        <div class="tab-content border border-top-0 rounded-bottom">
+          <!-- SWB -->
+          <div class="tab-pane fade show active p-2" id="tab-swb" role="tabpanel" aria-labelledby="tab-swb-btn">
+            <div class="d-flex justify-content-end">
+              <a class="btn btn-sm btn-outline-light text-dark" target="_blank"
+                 href="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin">Open SWB ↗</a>
+            </div>
+            <div class="embed-wrap">
+              <div class="embed-loading" id="swb-loader">Loading SWB…</div>
+              <iframe class="tab-embed" title="PAGASA SWB" id="swb-iframe"
+                src="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin"></iframe>
+            </div>
+            <div class="small text-muted mt-2">
+              If the bulletin does not display (site may block embedding), use the “Open SWB” button.
+            </div>
+          </div>
 
-      <!-- FFWWS -->
-      <div class="tab-pane fade p-2" id="tab-ffwws" role="tabpanel" aria-labelledby="tab-ffwws-btn">
-        <div class="d-flex justify-content-end">
-          <a class="btn btn-sm btn-outline-light text-dark" target="_blank"
-             href="https://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/">Open FFWWS ↗</a>
-        </div>
-        <div class="embed-wrap">
-          <div class="embed-loading" id="ffwws-loader">Loading FFWWS…</div>
-          <iframe class="tab-embed" title="FFWWS Map" id="ffwws-iframe"
-            src="https://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/"></iframe>
-        </div>
-        <div class="small text-muted mt-2">
-          Tip: In <strong>Map Legend</strong>, enable <em>Water Level</em> & <em>Rainfall</em>. Watch
-          <em>San Mateo-1</em> (WL) and <em>San Mateo-2</em> (RF) in the station list.
-        </div>
-      </div>
+          <!-- FFWWS -->
+          <div class="tab-pane fade p-2" id="tab-ffwws" role="tabpanel" aria-labelledby="tab-ffwws-btn">
+            <div class="d-flex justify-content-end">
+              <a class="btn btn-sm btn-outline-light text-dark" target="_blank"
+                 href="https://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/">Open FFWWS ↗</a>
+            </div>
+            <div class="embed-wrap">
+              <div class="embed-loading" id="ffwws-loader">Loading FFWWS…</div>
+              <iframe class="tab-embed" title="FFWWS Map" id="ffwws-iframe"
+                src="https://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/"></iframe>
+            </div>
+            <div class="small text-muted mt-2">
+              Tip: In <strong>Map Legend</strong>, enable <em>Water Level</em> & <em>Rainfall</em>. Watch
+              <em>San Mateo-1</em> (WL) and <em>San Mateo-2</em> (RF) in the station list.
+            </div>
+          </div>
 
-      <!-- Windy -->
-      <div class="tab-pane fade p-2" id="tab-windy" role="tabpanel" aria-labelledby="tab-windy-btn">
-        <div class="d-flex justify-content-end">
-          <a class="btn btn-sm btn-outline-light text-dark" target="_blank"
-             href="https://embed.windy.com/">Open Windy ↗</a>
+          <!-- Windy -->
+          <div class="tab-pane fade p-2" id="tab-windy" role="tabpanel" aria-labelledby="tab-windy-btn">
+            <div class="d-flex justify-content-end">
+              <a class="btn btn-sm btn-outline-light text-dark" target="_blank"
+                 href="https://embed.windy.com/">Open Windy ↗</a>
+            </div>
+            <div class="embed-wrap">
+              <div class="embed-loading" id="windy-loader">Loading Windy…</div>
+              <iframe class="tab-embed" title="Windy Layers" id="windy-iframe"
+                src="https://embed.windy.com/embed2.html?lat=14.69&lon=121.12&detailLat=14.69&detailLon=121.12&zoom=6&level=surface&overlay=wind&marker=true&pressure=true&model=icon&menu=&message="></iframe>
+            </div>
+          </div>
         </div>
-        <div class="embed-wrap">
-          <div class="embed-loading" id="windy-loader">Loading Windy…</div>
-          <iframe class="tab-embed" title="Windy Layers" id="windy-iframe"
-            src="https://embed.windy.com/embed2.html?lat=14.69&lon=121.12&detailLat=14.69&detailLon=121.12&zoom=6&level=surface&overlay=wind&marker=true&pressure=true&model=icon&menu=&message="></iframe>
-        </div>
+
       </div>
     </div>
 
-  </div>
-</div>
-<div class="alert alert-warning py-2 small mb-3">
-<div class="col-12 youtube-container">
-  <div class="panel-heading d-flex justify-content-between align-items-center">
-    <a href="https://www.youtube.com/@DOST_PAGASA/featured" target="_blank" style="color:#22313f;">DOST Public Weather Forecast</a>
-    <small id="ytUpdated" class="text-muted"></small>
-  </div>
-  <iframe id="ytFeatured" width="100%" height="580" frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen></iframe>
-</div>
+    <div class="alert alert-warning py-2 small mb-3">
+      <div class="col-12 youtube-container">
+        <div class="panel-heading d-flex justify-content-between align-items-center">
+          <a href="https://www.youtube.com/@DOST_PAGASA/featured" target="_blank" style="color:#22313f;">DOST Public Weather Forecast</a>
+          <small id="ytUpdated" class="text-muted"></small>
+        </div>
+        <iframe id="ytFeatured" width="100%" height="580" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen></iframe>
+      </div>
+    </div>
 
-<script>
-(async function loadFeatured() {
-  const frame = document.getElementById('ytFeatured');
-  const stamp = document.getElementById('ytUpdated');
-  const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxHGn5KTWD-joEAANOeFwRL5yF_Zew-BfJJnSS60paPMaMPzh-6UJm_cm7ocbMtPoAh/exec';
-
-  async function refresh() {
-    try {
-      const r = await fetch(ENDPOINT + '?cb=' + Date.now());
-      const { ok, videoId } = await r.json();
-      if (ok && videoId) {
-        frame.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
-        stamp.textContent = 'Auto-refreshed • ' +
-          new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
-        return;
-      }
-      // Fallback to live endpoint if parsing fails
-      frame.src = 'https://www.youtube.com/embed/live_stream?channel=UCpyLikj1x70S8UPxVqsPr6g&rel=0';
-    } catch (e) {
-      frame.src = 'https://www.youtube.com/embed/live_stream?channel=UCpyLikj1x70S8UPxVqsPr6g&rel=0';
-    }
-  }
-
-  await refresh();
-  setInterval(refresh, 60 * 60 * 1000); // refresh every hour
-})();
-</script>
-</div>
     <!-- PAGASA Weather Maps -->
-        <div class="row g-3 mt-2">
-          <div class="col-6 col-lg-3">
-            <div class="card h-100">
-              <a data-bs-toggle="modal" data-bs-target="#imageModal"
-                 data-image="https://src.meteopilipinas.gov.ph/repo/himawari/24hour/irsml/1irsml.gif">
-                <img src="https://src.meteopilipinas.gov.ph/repo/himawari/24hour/irsml/1irsml.gif" class="card-img-top" style="height:120px;object-fit:cover" alt="Satellite">
-              </a>
-              <div class="card-body p-2 small text-center">Satellite Image</div>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="card h-100">
-              <a data-bs-toggle="modal" data-bs-target="#imageModal"
-                 data-image="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/surface_map.jpg">
-                <img src="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/surface_map.jpg" class="card-img-top" style="height:120px;object-fit:cover" alt="Surface Map">
-              </a>
-              <div class="card-body p-2 small text-center">Surface Map Analysis</div>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="card h-100">
-              <a data-bs-toggle="modal" data-bs-target="#imageModal"
-                 data-image="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/chart.png">
-                <img src="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/chart.png" class="card-img-top" style="height:120px;object-fit:cover" alt="MSLP">
-              </a>
-              <div class="card-body p-2 small text-center">Predicted Mean Sea Level Pressure</div>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="card h-100">
-              <a data-bs-toggle="modal" data-bs-target="#imageModal"
-                 data-image="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/we98.png">
-                <img src="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/we98.png" class="card-img-top" style="height:120px;object-fit:cover" alt="Wind">
-              </a>
-              <div class="card-body p-2 small text-center">Predicted MSL Wind</div>
-            </div>
-          </div>
+    <div class="row g-3 mt-2">
+      <div class="col-6 col-lg-3">
+        <div class="card h-100">
+          <a data-bs-toggle="modal" data-bs-target="#imageModal"
+             data-image="https://src.meteopilipinas.gov.ph/repo/himawari/24hour/irsml/1irsml.gif">
+            <img src="https://src.meteopilipinas.gov.ph/repo/himawari/24hour/irsml/1irsml.gif" class="card-img-top" style="height:120px;object-fit:cover" alt="Satellite">
+          </a>
+          <div class="card-body p-2 small text-center">Satellite Image</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card h-100">
+          <a data-bs-toggle="modal" data-bs-target="#imageModal"
+             data-image="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/surface_map.jpg">
+            <img src="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/surface_map.jpg" class="card-img-top" style="height:120px;object-fit:cover" alt="Surface Map">
+          </a>
+          <div class="card-body p-2 small text-center">Surface Map Analysis</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card h-100">
+          <a data-bs-toggle="modal" data-bs-target="#imageModal"
+             data-image="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/chart.png">
+            <img src="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/chart.png" class="card-img-top" style="height:120px;object-fit:cover" alt="MSLP">
+          </a>
+          <div class="card-body p-2 small text-center">Predicted Mean Sea Level Pressure</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card h-100">
+          <a data-bs-toggle="modal" data-bs-target="#imageModal"
+             data-image="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/we98.png">
+            <img src="https://pubfiles.pagasa.dost.gov.ph/tamss/weather/we98.png" class="card-img-top" style="height:120px;object-fit:cover" alt="Wind">
+          </a>
+          <div class="card-body p-2 small text-center">Predicted MSL Wind</div>
         </div>
       </div>
     </div>
@@ -450,7 +421,7 @@
 
   <footer class="mt-auto py-4 border-top">
     <div class="container text-center">
-      <div class="small mb-1">Sources: OpenWeatherMap,PAGASA,FFWWS, DOST-PagASA,Windy, Zoom Earth</div>
+      <div class="small mb-1">Sources: OpenWeatherMap, PAGASA, FFWWS, DOST-PAGASA, Windy, Zoom Earth</div>
       <div class="small">Data may be delayed or unavailable during severe weather.</div>
       <div class="small">Developed by Engr. Rey Urbina</div>
     </div>
@@ -467,9 +438,6 @@
         <div class="modal-body p-0 position-relative">
           <div id="toolbarButtons">
             <button id="fitToggleBtn" class="btn btn-sm btn-light">Fit</button>
-            <!--<button id="zoomInBtn" class="btn btn-sm btn-light">🔍 In</button>
-            <button id="zoomOutBtn" class="btn btn-sm btn-light">🔎 Out</button>
-            <button id="resetZoomBtn" class="btn btn-sm btn-secondary">Reset</button> -->
           </div>
           <div class="image-wrapper"><img id="modalImage" alt="" class="fit-height"></div>
         </div>
@@ -497,8 +465,7 @@
     iframe.addEventListener("load", ()=> loader.style.display="none", { once:true });
     setTimeout(()=> loader.style.display="none", 8000);
   });
-</script>
-
+  </script>
 
   <!-- PAGASA Synopsis + SWB parsers -->
   <script>
@@ -574,7 +541,6 @@
     }
 
     async function loadSWB(){
-      // text proxy to bypass CORS
       const url = "https://r.jina.ai/https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin";
       try{
         const r = await fetch(url,{cache:"no-store"});
@@ -598,11 +564,60 @@
     }
   </script>
 
-  <!-- App scripts -->
+  <!-- App scripts: load constants, call Apps Script proxy for weather & YouTube -->
   <script>
-    const OWM_KEY = "662bc47b0b806958a77b4b260951abb8";
-    const LAT = 14.695151709155798, LON = 121.11788215916273;
+    // Will be set after loadConstants()
+    let LAT, LON, ENDPOINT, TOKEN;
 
+    // Load constants.txt (same origin as index.html). Supports LAT, LON, ENDPOINT, optional TOKEN.
+   async function loadConstants(){
+    // If opened directly from disk, fetch() of local files is blocked by the browser.
+    if (location.protocol === 'file:') {
+      // Dev fallback: allow query string override so you can test without a server.
+      const qs = new URLSearchParams(location.search);
+      if (qs.has('lat') && qs.has('lon') && qs.has('endpoint')) {
+        LAT = Number(qs.get('lat'));
+        LON = Number(qs.get('lon'));
+        ENDPOINT = qs.get('endpoint');
+        TOKEN = qs.get('token') || '';
+        return { LAT, LON, ENDPOINT, TOKEN, _source: 'querystring' };
+      }
+      throw new Error(
+        "This page is opened with file://. Browsers block fetch() for local files.\n" +
+        "Run a local web server or deploy to GitHub Pages, or pass ?lat=&lon=&endpoint= in the URL for dev."
+      );
+    }
+
+    // Normal path when served over http(s)
+    const res = await fetch('./constants.txt?cb=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to load constants.txt');
+    const txt = await res.text();
+
+    const map = {};
+    txt.split(/\r?\n/).forEach(line => {
+      let s = line.trim();
+      if (!s || s.startsWith('#')) return;
+      s = s.replace(/,\s*$/, ''); // drop trailing comma
+      const m = s.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)$/);
+      if (!m) return;
+      const k = m[1];
+      let v = m[2].trim();
+      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
+      if (/^-?\d+(\.\d+)?$/.test(v)) v = parseFloat(v);
+      map[k] = v;
+    });
+
+    if (map.LAT == null || map.LON == null || !map.ENDPOINT) {
+      throw new Error('Missing LAT/LON/ENDPOINT in constants.txt');
+    }
+
+    LAT = Number(map.LAT);
+    LON = Number(map.LON);
+    ENDPOINT = String(map.ENDPOINT);
+    TOKEN = map.TOKEN ? String(map.TOKEN) : "";
+    return map;
+  }
+  
     /* ---------- Helpers ---------- */
     const fmtPHTime = (d=new Date()) => new Date(d.toLocaleString("en-US",{timeZone:"Asia/Manila"}));
     function setPHClock(){
@@ -723,7 +738,6 @@
       const a = analyzeWeather(data);
       const items = [];
 
-      // impacts reflect current/near-term signals to give context to "Actions"
       if ((c.rain && c.rain["1h"]>0) || /rain|thunder/i.test(c.weather?.[0]?.main||"")) {
         items.push(`🌧️ Rain ongoing/nearby; POP next hours up to ${a.popMax}%`);
       }
@@ -739,7 +753,6 @@
       el.innerHTML = items.length ? `<ul class="mb-0 small">${items.map(i=>`<li>${i}</li>`).join("")}</ul>` : `<div class="small-muted">No significant current impacts.</div>`;
     }
 
-    // === ACTIONS (current + PAGASA only)
     function renderActions(data, swb){
       const ul = document.getElementById("actions-list");
       if (!ul || !data) return;
@@ -754,71 +767,37 @@
       const syn = _synopsisSev || {score:0,label:""};
       const swbInfo = swb || {tcwsMax:0,affectsLocal:false,systemType:""};
 
-      // Determine EOC posture ONLY from the three sources
       let eoc = "Blue";
       if (swbInfo.affectsLocal && swbInfo.tcwsMax >= 1) eoc = "Yellow";
       if (swbInfo.affectsLocal && swbInfo.tcwsMax >= 2) eoc = "Orange";
       if (swbInfo.affectsLocal && swbInfo.tcwsMax >= 3) eoc = "Red";
       if (syn.label === "Monsoon" && (nowRainMM >= 5 || nowThunder)) eoc = (eoc==="Blue"?"Yellow":eoc);
-
       const cadence = (eoc==="Red")?"hourly":(eoc==="Orange")?"every 2 hrs":(eoc==="Yellow")?"every 3–6 hrs":"per shift";
 
       const actions = [];
-
-      // EOC / Coordination (only if any trigger exists)
       const anyTrigger = (nowRainMM>0 || nowThunder || gustK>=40 || syn.score>0 || (swbInfo.affectsLocal && swbInfo.tcwsMax>0));
-      if (anyTrigger) {
-        actions.push(`📟 <strong>EOC:</strong> <span class="kbd">${eoc}</span> • monitoring ${cadence}; align with latest PAGASA Synopsis/SWB.`);
-      }
-
-      // SWB-triggered actions (only if SWB mentions Rizal/NCR)
+      if (anyTrigger) actions.push(`📟 <strong>EOC:</strong> <span class="kbd">${eoc}</span> • monitoring ${cadence}; align with latest PAGASA Synopsis/SWB.`);
       if (swbInfo.affectsLocal && swbInfo.tcwsMax > 0) {
         const L = swbInfo.tcwsMax;
         const sys = swbInfo.systemType ? swbInfo.systemType.toUpperCase() : "TCWS";
-        if (L===1) {
-          actions.push(`🌀 <strong>SWB:</strong> ${sys} • TCWS #1 affecting area. Secure loose outdoor items, monitor river levels and PAGASA updates.`);
-        } else if (L===2) {
-          actions.push(`🌀 <strong>SWB:</strong> ${sys} • TCWS #2. Preposition pumps/boats and road barricades; advise early dismissal of outdoor events; check backup power/ comms.`);
-        } else if (L>=3) {
-          actions.push(`🌀 <strong>SWB:</strong> ${sys} • TCWS #${L}. Consider pre-emptive evacuation of flood-prone river easements; suspend large outdoor activities; keep rescue & shelters on standby.`);
-        }
+        if (L===1) actions.push(`🌀 <strong>SWB:</strong> ${sys} • TCWS #1 affecting area. Secure loose outdoor items, monitor river levels and PAGASA updates.`);
+        else if (L===2) actions.push(`🌀 <strong>SWB:</strong> ${sys} • TCWS #2. Preposition pumps/boats and road barricades; advise early dismissal of outdoor events; check backup power/ comms.`);
+        else if (L>=3) actions.push(`🌀 <strong>SWB:</strong> ${sys} • TCWS #${L}. Consider pre-emptive evacuation; suspend large outdoor activities; keep rescue & shelters on standby.`);
       } else if (syn.label === "Tropical Cyclone") {
         actions.push(`🌀 PAGASA notes a tropical cyclone. Track SWB updates; actions escalate once TCWS includes Rizal/NCR.`);
       }
-
-      // Monsoon/LPA from Synopsis
       if (syn.label === "Monsoon" || syn.label === "LPA") {
         actions.push(`🌧️ <strong>${syn.label}:</strong> Expect on/off rains; clear drainage; keep vehicles out of flood-prone streets; ready pumps at known hotspots.`);
       }
+      if (nowRainMM >= 10) actions.push(`🚧 <strong>Heavy rain now (${nowRainMM.toFixed(1)} mm/hr)</strong>: avoid waterways/bridges; move vehicles to higher ground; deploy drainage clearing.`);
+      else if (nowRainMM >= 2) actions.push(`🌦️ Rain ongoing: caution for slick roads & localized flooding; put warning cones on low-lying segments.`);
+      if (nowThunder) actions.push(`⚡ Thunderstorms nearby: suspend outdoor sports/PE, construction at heights, and riverbank activities; seek sturdy shelter.`);
+      if (gustK >= 80) actions.push(`🌬️ Gusts ~${gustK} kph: postpone large outdoor events; secure scaffolding/tarpaulins/signage; restrict small craft/river use.`);
+      else if (gustK >= 60) actions.push(`🌬️ Gusty winds ~${gustK} kph: tie down tarps, check construction sites and temporary structures; trim hazard branches near lines.`);
+      else if (windK >= 35) actions.push(`🍃 Windy now (${windK} kph): secure light objects and roadside fixtures.`);
+      if (highUV) actions.push(`🕶️ UV ${c.uvi}: sun protection 10am–3pm (hat, sunscreen); provide shade & hydration for outdoor crews.`);
 
-      // Current rain / thunder
-      if (nowRainMM >= 10) {
-        actions.push(`🚧 <strong>Heavy rain now (${nowRainMM.toFixed(1)} mm/hr)</strong>: avoid waterways/bridges; move vehicles to higher ground; deploy quick drainage clearing.`);
-      } else if (nowRainMM >= 2) {
-        actions.push(`🌦️ Rain ongoing: caution for slick roads & localized flooding; put warning cones on low-lying segments.`);
-      }
-      if (nowThunder) {
-        actions.push(`⚡ Thunderstorms nearby: suspend outdoor sports/PE, construction at heights, and riverbank activities; seek sturdy shelter.`);
-      }
-
-      // Current wind / gusts
-      if (gustK >= 80) {
-        actions.push(`🌬️ Gusts ~${gustK} kph: postpone large outdoor events; secure scaffolding/tarpaulins/signage; restrict small craft/river use.`);
-      } else if (gustK >= 60) {
-        actions.push(`🌬️ Gusty winds ~${gustK} kph: tie down tarps, check construction sites and temporary structures; trim hazard branches near lines.`);
-      } else if (windK >= 35) {
-        actions.push(`🍃 Windy now (${windK} kph): secure light objects and roadside fixtures.`);
-      }
-
-      // UV
-      if (highUV) {
-        actions.push(`🕶️ UV ${c.uvi}: sun protection 10am–3pm (hat, sunscreen); provide shade & hydration for outdoor crews.`);
-      }
-
-      // If no triggers at all, say so simply
-      if (!actions.length) {
-        actions.push(`✅ No immediate action required based on <em>current weather</em>, <em>PAGASA Synopsis</em>, and <em>PAGASA SWB</em>. Continue routine monitoring.`);
-      }
+      if (!actions.length) actions.push(`✅ No immediate action required based on <em>current weather</em>, <em>PAGASA Synopsis</em>, and <em>PAGASA SWB</em>. Continue routine monitoring.`);
 
       ul.innerHTML = actions.map(a => `<li>${a}</li>`).join("");
     }
@@ -827,7 +806,6 @@
     function renderCurrent(data){
       const c = data.current;
 
-      // hero + numbers
       document.getElementById("current-temp").textContent = Math.round(c.temp) + "°C";
       document.getElementById("feels-like").textContent = Math.round(c.feels_like);
       document.getElementById("current-desc").textContent = c.weather?.[0]?.description ?? "—";
@@ -847,25 +825,21 @@
       document.getElementById("dew").textContent = Math.round(c.dew_point ?? 0);
       document.getElementById("clouds").textContent = c.clouds ?? "—";
 
-      // rain prob (first hourly as immediate proxy)
       let rp = "—";
       if (Array.isArray(data.hourly) && data.hourly[0]?.pop != null) rp = Math.round((data.hourly[0].pop || 0) * 100);
       else if (c.rain) rp = 100;
       document.getElementById("rain-prob").textContent = rp;
 
-      // UV
       const uv = c.uvi ?? 0;
       const badge = document.getElementById("uv-badge");
       document.getElementById("uv").textContent = uv;
       badge.className = "badge rounded-pill px-3 py-2 " + uvBadgeClass(uv);
 
-      // Sunrise / sunset (PH time)
       if (c.sunrise && c.sunset) {
         document.getElementById("sunrise").textContent = toPH(c.sunrise * 1000);
         document.getElementById("sunset").textContent  = toPH(c.sunset  * 1000);
       }
 
-      // Day/night gradient
       const hero = document.querySelector(".weather-hero");
       if (hero && c.sunrise && c.sunset) {
         const now = c.dt ? c.dt*1000 : Date.now();
@@ -873,20 +847,19 @@
         hero.classList.toggle("night", !isDay);
       }
 
-      // Sitrep + chips
       document.getElementById("sitrep").textContent =
         `Temp ${Math.round(c.temp)}°C, ${c.weather?.[0]?.main || "—"}; wind ${windMS.toFixed(1)} m/s; RH ${c.humidity}%`;
 
       renderHazardChips(data);
     }
 
-    /* ---------- Hourly Chart (animated NOW line) ---------- */
+    /* ---------- Hourly Chart ---------- */
     function renderHourlyChart(hourly){
       const canvas = document.getElementById("hourlyChart");
       const ctx = canvas.getContext("2d");
 
       const hours  = hourly.slice(0,12);
-      const labels = hours.map(h => new Date(h.dt*1000).toLocaleTimeString("en-US",{hour:"2-digit", minute:"2-digit", hour12:true}));
+      const labels = hours.map(h => new Date(h.dt*1000).toLocaleTimeString("en-US",{hour:"2-digit", minute:"2-digit",hour12:true}));
       const temps  = hours.map(h => h.temp);
       const pops   = hours.map(h => Math.round((h.pop || 0) * 100));
 
@@ -973,7 +946,7 @@
       setInterval(()=> window._hourlyChart?.update(), 1000);
     }
 
-    /* ---------- Daily Summary (PAGASA-style) ---------- */
+    /* ---------- Daily Summary / Table ---------- */
     function cloudsText(p){
       if (p>=90) return "overcast";
       if (p>=70) return "mostly cloudy";
@@ -1039,14 +1012,16 @@
       }).join("");
     }
 
-    /* ---------- Data loader ---------- */
+    /* ---------- Data loader via Apps Script proxy ---------- */
     async function loadAll(){
       try{
-        const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${LAT}&lon=${LON}&appid=${OWM_KEY}&units=metric`;
-        const res = await fetch(url);
-        if(!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-        const data = await res.json();
+        const tokenQS = TOKEN ? `&token=${encodeURIComponent(TOKEN)}` : "";
+        const url = `${ENDPOINT}?fn=owm&lat=${LAT}&lon=${LON}&units=metric&exclude=minutely&ttl=300${tokenQS}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        const payload = await res.json();
+        if (!payload.ok) throw new Error(payload.error || 'Proxy error');
 
+        const data = payload.data;
         _latestOWM = data;
         setUpdated((data.current?.dt || Date.now())*1000);
 
@@ -1062,14 +1037,12 @@
           </div>
         `).openPopup();
 
-        // Render bits that don't depend on SWB yet
         renderCurrent(data);
         renderHourlyChart(data.hourly || []);
         renderDailyTable(data.daily || [], data.hourly || []);
         renderImpacts(data);
         renderHazardChips(data);
 
-        // Load PAGASA text sources and then finalize Actions
         await loadPagasaSynopsis();
         await loadSWB();
         renderActions(_latestOWM, _swbInfo);
@@ -1077,20 +1050,16 @@
         const alert = document.createElement("div");
         alert.className = "alert alert-warning alert-dismissible fade show";
         alert.role = "alert";
-        alert.innerHTML = `⚠️ OpenWeather fetch error: ${e?.message || e} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        alert.innerHTML = `⚠️ Weather proxy error: ${e?.message || e} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
         document.querySelector("main").prepend(alert);
       }
     }
-    loadAll();
 
     /* ---------- Image modal (zoom) ---------- */
     (() => {
       const imageModal = document.getElementById('imageModal');
       const modalImage = document.getElementById('modalImage');
       const fitToggleBtn = document.getElementById('fitToggleBtn');
-      const resetZoomBtn = document.getElementById('resetZoomBtn');
-      const zoomInBtn = document.getElementById('zoomInBtn');
-      const zoomOutBtn = document.getElementById('zoomOutBtn');
       let panzoomInstance;
 
       document.querySelectorAll('[data-bs-toggle="modal"][data-image]').forEach(a=>{
@@ -1103,9 +1072,6 @@
         modalImage.parentElement.addEventListener('wheel', panzoomInstance.zoomWithWheel);
       });
 
-      zoomInBtn.addEventListener('click', ()=> panzoomInstance && panzoomInstance.zoomIn());
-      zoomOutBtn.addEventListener('click', ()=> panzoomInstance && panzoomInstance.zoomOut());
-      resetZoomBtn.addEventListener('click', ()=> panzoomInstance && panzoomInstance.reset());
       fitToggleBtn.addEventListener('click', ()=>{
         if (modalImage.classList.contains('fit-height')) {
           modalImage.classList.remove('fit-height'); modalImage.classList.add('fit-width'); fitToggleBtn.textContent='Fit';
@@ -1115,6 +1081,59 @@
         panzoomInstance && panzoomInstance.reset();
       });
     })();
+
+    /* ---------- YouTube "latest" via Apps Script (hourly refresh) ---------- */
+    async function startYouTubeFeatured(){
+      const frame = document.getElementById('ytFeatured');
+      const stamp = document.getElementById('ytUpdated');
+      const tokenQS = TOKEN ? `&token=${encodeURIComponent(TOKEN)}` : "";
+
+      async function refresh() {
+        try {
+          const r = await fetch(`${ENDPOINT}?fn=yt_latest&ttl=600${tokenQS}&cb=` + Date.now(), { cache: 'no-store' });
+          const { ok, videoId } = await r.json();
+          if (ok && videoId) {
+            frame.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
+          } else {
+            frame.src = 'https://www.youtube.com/embed/live_stream?channel=UCpyLikj1x70S8UPxVqsPr6g&rel=0';
+          }
+          stamp.textContent = 'Auto-refreshed • ' +
+            new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+        } catch (e) {
+          frame.src = 'https://www.youtube.com/embed/live_stream?channel=UCpyLikj1x70S8UPxVqsPr6g&rel=0';
+        }
+      }
+
+      await refresh();
+      setInterval(refresh, 60 * 60 * 1000);
+    }
+
+    /* ---------- Boot AFTER constants load ---------- */
+    (async () => {
+      try {
+        await loadConstants();   // sets LAT, LON, ENDPOINT, optional TOKEN
+        await loadAll();         // render maps, charts, actions
+        await startYouTubeFeatured(); // set up the hourly YT refresh
+      } catch (err) {
+        const alert = document.createElement("div");
+        alert.className = "alert alert-danger alert-dismissible fade show";
+        alert.role = "alert";
+        alert.innerHTML = `❌ Startup error: ${err?.message || err}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.querySelector("main").prepend(alert);
+        console.error(err);
+      }
+    })();
+
+    // Simple copy button for Synopsis
+    document.addEventListener('click', (e)=>{
+      if (e.target && e.target.id === 'copy-synopsis-btn') {
+        const t = document.getElementById('pagasa-synopsis')?.textContent || '';
+        navigator.clipboard.writeText(t).then(()=>{
+          e.target.textContent = 'Copied!';
+          setTimeout(()=> e.target.textContent = 'Copy', 1200);
+        });
+      }
+    });
   </script>
 </body>
 </html>
