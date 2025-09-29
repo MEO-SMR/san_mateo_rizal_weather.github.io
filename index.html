@@ -808,7 +808,7 @@
 
       document.getElementById("current-temp").textContent = Math.round(c.temp) + "°C";
       document.getElementById("feels-like").textContent = Math.round(c.feels_like);
-      document.getElementById("current-desc").textContent = c.weather?.[0]?.description ?? "—";
+      document.getElementById("current-desc").textContent = c.weather?.[0]?.tion ?? "—";
       document.getElementById("main-icon").src = `https://openweathermap.org/img/wn/${c.weather?.[0]?.icon}@2x.png`;
 
       const windMS  = c.wind_speed ?? 0;
@@ -997,7 +997,7 @@
         return `
           <tr>
             <td>${date}</td>
-            <td class="text-start">${summary}</td>
+            <td class="text-start">${day.summary}</td>
             <td><img src="${icon}" alt="${day.weather?.[0]?.description||''}" width="32" height="32"></td>
             <td>${day.temp.min.toFixed(1)} / ${day.temp.max.toFixed(1)}</td>
             <td>${day.feels_like.day.toFixed(1)} / ${day.feels_like.night.toFixed(1)}</td>
