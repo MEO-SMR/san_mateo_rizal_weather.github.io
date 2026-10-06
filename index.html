@@ -1799,49 +1799,34 @@
          DashboardCore, or DashboardScheduler.
          ============================================================ -->
     <script>
-      const APP_CONFIG = Object.freeze({
-        app: {
-          name: "San Mateo Weather & Situational Dashboard",
-          version: "2.3.4",
-          timezone: "Asia/Manila",
-          locale: "en-PH"
-        },
-        location: {
-          name: "San Mateo, Rizal",
-          shortName: "San Mateo, PH",
-          lat: 14.695151709155798,
-          lon: 121.11788215916273
-        },
-        refresh: {
-          clock: 1000,
-          weather: 15 * 60 * 1000,
-          youtube: 15 * 60 * 1000,
-          ffwws: 60 * 60 * 1000,
-          images: 30 * 60 * 1000
-        },
-        api: {
-          // Keep this only as a temporary client-side configuration.
-          // Production deployment should proxy OpenWeather requests server-side.
-          openWeatherKey: "662bc47b0b806958a77b4b260951abb8",
-          endpoint: "https://script.google.com/macros/s/AKfycbwtPUx2qBvOAqj_pBu-IFf3bu2qb8mhtl8LhgadDQjTqq3ScQ8lU7meOHzDeh-uaFc_/exec",
-          youtubeProxy: "https://script.google.com/macros/s/AKfycbyH863c0eEqFXlcHrPmpGSTQvDBdz392wG_DYrTqUG1R7-T5KTKTEWonWvVaLsggHL8/exec",
-          ffwwsProxy: "https://script.google.com/macros/s/AKfycbwEWW19UTzIDt_5D_wgwP24xeqMX7c5me6WnQ5_dJ_tMoNpJJiBOs7k7f1CZz4GiudNDw/exec",
-          pagasaSynopsisProxy: "https://script.google.com/macros/s/AKfycbzq9RMWg6dTZMpv9QKctHpc3-bPa0uCslgcN0z36AvKoYKD67tx_lyctFuZJ0llWFsF/exec"
-        },
-        youtube: {
-          channelId: "UCpyLikj1x70S8UPxVqsPr6g",
-          streamsUrl: "https://www.youtube.com/@DOST_PAGASA/streams",
-          videosUrl: "https://www.youtube.com/@DOST_PAGASA/videos",
-          embedBase: "https://www.youtube.com/embed/"
-        },
-        external: {
-          pagasaDaily: "https://www.pagasa.dost.gov.ph/tropical-cyclone-advisory-iframe",
-          panahon: "https://www.panahon.gov.ph/",
-          ffwws: "https://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/water/table.do",
-          zoomEarth: "https://zoom.earth/",
-          windy: "https://www.windy.com/?14.695,121.118,10,i:pressure"
-        }
-      });
+      let APP_CONFIG;
+      const APP_CONFIG_READY = fetch("constant.txt", { cache: "no-store" })
+        .then(response => {
+          if (!response.ok) throw new Error(`constant.txt request failed: ${response.status}`);
+          return response.json();
+        })
+        .then(settings => {
+          if (!settings.api || !settings.youtube || !settings.external) {
+            throw new Error("constant.txt is missing a required settings section.");
+          }
+          APP_CONFIG = Object.freeze({
+            app: {
+              name: "San Mateo Weather & Situational Dashboard",
+              version: "2.3.4",
+              timezone: "Asia/Manila",
+              locale: "en-PH"
+            },
+            refresh: {
+              clock: 1000,
+              weather: 15 * 60 * 1000,
+              youtube: 15 * 60 * 1000,
+              ffwws: 60 * 60 * 1000,
+              images: 30 * 60 * 1000
+            },
+            ...settings
+          });
+          return APP_CONFIG;
+        });
 
       const DashboardCore = (() => {
         const storage = {
@@ -2416,7 +2401,9 @@
         };
       })();
 
-      YouTubeModule.init();
+      APP_CONFIG_READY
+        .then(() => YouTubeModule.init())
+        .catch(error => console.error("Dashboard configuration unavailable:", error));
     </script>
 
     <!-- PAGASA Weather Maps -->
@@ -2578,6 +2565,7 @@ function renderRizalPill(n){
 
         <!-- Widget JS (no Jina API key) -->
         <script>
+        APP_CONFIG_READY.then(() => {
         (() => {
           const REFRESH_MS = 60 * 60 * 1000;
 
@@ -2963,7 +2951,7 @@ ensureResponsiveTable('rf-tbody');   // keep if rainfall stays
 
 
           // Boot
-document.addEventListener("DOMContentLoaded", () => {
+function bootWaterLevelWidgets() {
   // WATER LEVEL init
   const wlPick = pickSavedWithData(WL_KEYS, wl_getValid);
   if (wlPick.raw) {
@@ -2985,9 +2973,16 @@ document.addEventListener("DOMContentLoaded", () => {
   rf_fetchSave();
   setInterval(wl_fetchSave, REFRESH_MS);
   setInterval(rf_fetchSave, REFRESH_MS);
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootWaterLevelWidgets, { once: true });
+} else {
+  bootWaterLevelWidgets();
+}
 
         })();
+        }).catch(error => console.error("Water-level configuration unavailable:", error));
         </script>
 
 
@@ -3241,7 +3236,11 @@ function attachPlainPinchZoom(container, img){
       });
     }
 
-    document.addEventListener("DOMContentLoaded", initializeDashboardLinks, { once: true });
+    document.addEventListener("DOMContentLoaded", () => {
+      APP_CONFIG_READY
+        .then(initializeDashboardLinks)
+        .catch(error => console.error("Dashboard links unavailable:", error));
+    }, { once: true });
   </script>
 
   <!-- Main JS -->
@@ -3434,6 +3433,7 @@ function attachPlainPinchZoom(container, img){
     }
 
     async function fetchPagasaSynopsisFromProxy(force = false) {
+      await APP_CONFIG_READY;
       const endpoint = String(APP_CONFIG.api.pagasaSynopsisProxy || "").trim();
       if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/i.test(endpoint)) {
         throw new Error("PAGASA Synopsis proxy is not configured.");
@@ -3674,10 +3674,10 @@ function attachPlainPinchZoom(container, img){
   <!-- App scripts -->
   <script>
     /* ======= CONFIG ======= */
-    const OWM_KEY  = APP_CONFIG.api.openWeatherKey;
-    const LAT      = APP_CONFIG.location.lat;
-    const LON      = APP_CONFIG.location.lon;
-    const ENDPOINT = APP_CONFIG.api.endpoint;
+    let OWM_KEY;
+    let LAT;
+    let LON;
+    let ENDPOINT;
     const TOKEN    = ""; // optional shared secret
 
     /* ---------- Helpers ---------- */
@@ -4914,7 +4914,19 @@ function updateSanMateoPopup(marker, data){
         document.querySelector("main").prepend(alert);
       }
     }
-    loadAll();
+    APP_CONFIG_READY.then(config => {
+      OWM_KEY = config.api.openWeatherKey;
+      LAT = config.location.lat;
+      LON = config.location.lon;
+      ENDPOINT = config.api.endpoint;
+      return loadAll();
+    }).catch(error => {
+      console.error("Dashboard configuration unavailable:", error);
+      const alert = document.createElement("div");
+      alert.className = "alert alert-warning";
+      alert.textContent = "Dashboard settings could not be loaded. Check that constant.txt is available beside index.html.";
+      document.querySelector("main")?.prepend(alert);
+    });
 
     /* ---------- Ask server-side AI for action suggestions ---------- */
     async function requestAIActions(){
@@ -5155,7 +5167,5 @@ function updateSanMateoPopup(marker, data){
   window._refreshResponsiveTables = init;
 })();
 </script>
-
-
 </body>
 </html>
