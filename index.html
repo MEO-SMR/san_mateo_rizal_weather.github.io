@@ -1800,14 +1800,14 @@
          ============================================================ -->
     <script>
       let APP_CONFIG;
-      const APP_CONFIG_READY = fetch("constants.txt", { cache: "no-store" })
+      const APP_CONFIG_READY = fetch("constants.json", { cache: "no-store" })
         .then(response => {
-          if (!response.ok) throw new Error(`constants.txt request failed: ${response.status}`);
+          if (!response.ok) throw new Error(`constants.json request failed: ${response.status}`);
           return response.json();
         })
         .then(settings => {
           if (!settings.api || !settings.youtube || !settings.external) {
-            throw new Error("constants.txt is missing a required settings section.");
+            throw new Error("constant.txt is missing a required settings section.");
           }
           APP_CONFIG = Object.freeze({
             app: {
@@ -4924,7 +4924,7 @@ function updateSanMateoPopup(marker, data){
       console.error("Dashboard configuration unavailable:", error);
       const alert = document.createElement("div");
       alert.className = "alert alert-warning";
-      alert.textContent = "Dashboard settings could not be loaded. Check that constants.txt is available beside index.html.";
+      alert.textContent = "Dashboard settings could not be loaded. Check that constants.json is available beside index.html.";
       document.querySelector("main")?.prepend(alert);
     });
 
@@ -5167,5 +5167,7 @@ function updateSanMateoPopup(marker, data){
   window._refreshResponsiveTables = init;
 })();
 </script>
+
+
 </body>
 </html>
