@@ -4,6 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>San Mateo Weather & Situational Dashboard</title>
+  <meta name="theme-color" content="#0d6efd" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="San Mateo Weather" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <script>
+    const savedWeatherTheme = localStorage.getItem("weather-theme");
+    document.documentElement.dataset.theme = savedWeatherTheme ||
+      (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  </script>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icons/weather-icon-192.png" />
   <!-- Refactored architecture: centralized configuration, core utilities, scalable modules -->
 
   <!-- Favicon -->
@@ -121,6 +132,53 @@
       --bs-table-hover-bg: rgba(0,0,0,.03);
       border-color: var(--border);
     }
+    .forecast-table--daily,
+    .forecast-table--hourly-rain{table-layout:fixed}
+    .forecast-table--daily{min-width:1450px}
+    .forecast-table--hourly-rain{min-width:900px}
+    .forecast-table--daily thead th:nth-child(1){width:9%}
+    .forecast-table--daily thead th:nth-child(2){width:25%}
+    .forecast-table--daily thead th:nth-child(3){width:5%}
+    .forecast-table--daily thead th:nth-child(4){width:9%}
+    .forecast-table--daily thead th:nth-child(5){width:9%}
+    .forecast-table--daily thead th:nth-child(6){width:7%}
+    .forecast-table--daily thead th:nth-child(7){width:7%}
+    .forecast-table--daily thead th:nth-child(8){width:6%}
+    .forecast-table--daily thead th:nth-child(9){width:8%}
+    .forecast-table--daily thead th:nth-child(10){width:6%}
+    .forecast-table--daily thead th:nth-child(11){width:6%}
+    .forecast-table--daily thead th:nth-child(12){width:3%}
+    .forecast-table--hourly-rain thead th:nth-child(1){width:18%}
+    .forecast-table--hourly-rain thead th:nth-child(2){width:10%}
+    .forecast-table--hourly-rain thead th:nth-child(3){width:16%}
+    .forecast-table--hourly-rain thead th:nth-child(4){width:16%}
+    .forecast-table--hourly-rain thead th:nth-child(5){width:22%}
+    .forecast-table--hourly-rain thead th:nth-child(6){width:18%}
+    .forecast-column-header{
+      display:grid;align-items:stretch;background:var(--surface-2);color:var(--text);
+      border:1px solid var(--border);border-bottom:2px solid #334155;
+      font-weight:700;text-align:center
+    }
+    .forecast-column-header span{
+      display:flex;align-items:center;justify-content:center;
+      min-width:0;padding:.65rem .4rem;border-right:1px solid var(--border);
+      line-height:1.25;overflow-wrap:anywhere
+    }
+    .forecast-column-header span:last-child{border-right:0}
+    .forecast-column-header--daily{width:1450px;grid-template-columns:9% 25% 5% 9% 9% 7% 7% 6% 8% 6% 6% 3%}
+    .forecast-column-header--daily span:nth-child(1),
+    .forecast-column-header--daily span:nth-child(2){justify-content:flex-start;text-align:left}
+    .forecast-column-header--hourly-rain{width:900px;grid-template-columns:18% 10% 16% 16% 22% 18%}
+    .forecast-column-header--hourly-rain span:first-child{justify-content:flex-start;text-align:left}
+    .forecast-table thead.visually-hidden{
+      position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+      overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important
+    }
+    .forecast-table thead th{vertical-align:middle;white-space:normal}
+    .forecast-table tbody td{vertical-align:middle}
+    .forecast-table .forecast-number{text-align:right;font-variant-numeric:tabular-nums}
+    #tab-rain .forecast-table tbody td{text-align:center}
+    #tab-rain .forecast-table tbody td:first-child{text-align:left}
     .forecast-scroll-wrapper{position:relative; max-height:520px; overflow:auto; scrollbar-width:thin}
     .forecast-scroll-wrapper thead th{
       position:sticky; top:0; z-index:2; background:var(--surface-2) !important;
@@ -170,12 +228,6 @@
 
     /* Taller map */
 #map{ height:560px }
-
-/* Make the right metric column slightly narrower on desktop */
-@media (min-width: 992px){
-  .weather-card .col-lg-7{ flex:0 0 73%; max-width:73%; }
-  .weather-card .col-lg-5{ flex:0 0 27%; max-width:27%; }
-}
 
 /* Zoom-Earth like menu */
 .leaflet-control-wx{
@@ -534,9 +586,17 @@
   tbody tr.row-critical td:first-child{ box-shadow:inset 3px 0 0 rgba(239, 68,68,.55) }
 </style>
         <style>
-          #smr-wlrf :root{
+          #smr-wlrf{
+            --bg:#f8fafc; --panel:#ffffff; --text:#1f2937; --muted:#64748b; --border:#cbd5e1;
+            --table-header:#f8fafc; --table-row:#ffffff; --table-even:#f8fafc; --table-hover:#f1f5f9;
+            --table-head-text:#065f46; --table-text:#1f2937; --table-border:#334155;
+            --alert:#e6a700; --alarm:#f97316; --critical:#ef4444;
+          }
+          html[data-theme="dark"] #smr-wlrf{
             --bg:#0b1220; --panel:#121a2a; --text:#e5e7eb; --muted:#9ca3af; --border:#253046;
-            --alert:#facc15; --alarm:#fb923c; --critical:#ef4444;
+            --table-header:#1e293b; --table-row:#111c2e; --table-even:#182235; --table-hover:#202d43;
+            --table-head-text:#e2e8f0; --table-text:#e5e7eb; --table-border:#334155;
+            --alert:#facc15; --alarm:#fb923c; --critical:#f87171;
           }
           #smr-wlrf .card{background:var(--panel);border:1px solid var(--border);border-radius:14px}
           #smr-wlrf .hd{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;font-weight:800;border-radius:12px 12px 0 0}
@@ -544,9 +604,65 @@
           #smr-wlrf .muted{color:var(--muted)}
           #smr-wlrf table{width:100%;border-collapse:collapse;border:1px solid var(--border);font-size:.95rem}
           #smr-wlrf th,#smr-wlrf td{padding:.56rem .6rem;border-top:1px solid var(--border)}
-          #smr-wlrf thead th{background:rgba(255,255,255,.05);border-bottom:2px solid var(--border);text-align:left}
+          #smr-wlrf thead th{background:var(--table-header);color:var(--table-head-text);border-bottom:2px solid var(--table-border);text-align:left}
+          #smr-wlrf .wl-history-table thead tr:first-child th{background:var(--table-header);color:var(--table-head-text);border-color:var(--table-border)}
+          #smr-wlrf .wl-history-table thead tr:nth-child(2) th{background:var(--table-header);color:var(--table-head-text);border-color:var(--table-border)}
+          #smr-wlrf .wl-history-table .wl-group-observed{color:var(--table-head-text)}
+          #smr-wlrf .wl-history-table .wl-group-warning{color:var(--table-head-text)}
+          #smr-wlrf .wl-history-table tbody td:not(.wl-alert):not(.wl-alarm):not(.wl-critical){color:var(--text);border-color:var(--border)}
           #smr-wlrf tbody tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+          #smr-wlrf .wl-history-table tbody tr:nth-child(even) td{background:var(--table-even)}
+          #smr-wlrf .wl-history-table tbody tr:hover td{background:var(--table-hover)}
           #smr-wlrf .num{text-align:right;font-variant-numeric:tabular-nums}
+          #smr-wlrf .rf-legend{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.85rem}
+          #smr-wlrf .rf-legend-item{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .6rem;border:1px solid #334155;border-radius:999px;background:#182235;color:#e2e8f0;font-size:.78rem;font-weight:700}
+          #smr-wlrf .rf-legend-item::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:currentColor}
+          #smr-wlrf .rf-legend-item--heavy{color:#facc15}
+          #smr-wlrf .rf-legend-item--intense{color:#fb923c}
+          #smr-wlrf .rf-legend-item--torrential{color:#f87171}
+          #smr-wlrf #rf-table{width:100%;color:var(--table-text);border:1px solid var(--table-border);border-radius:12px;overflow:hidden}
+          #smr-wlrf #rf-table thead th{background:var(--table-header);color:var(--table-head-text);text-align:center;border-color:var(--table-border)}
+          #smr-wlrf #rf-table thead tr:nth-child(2) th{background:var(--table-header);color:var(--table-head-text)}
+          #smr-wlrf #rf-table tbody tr{background:var(--table-row)}
+          #smr-wlrf #rf-table tbody tr:nth-child(even){background:var(--table-even)}
+          #smr-wlrf #rf-table tbody td{color:var(--table-text);border-color:var(--table-border)}
+          #smr-wlrf #rf-table tbody td:first-child{color:var(--text);font-weight:700}
+          #smr-wlrf #rf-table tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
+          #smr-wlrf #rf-table .wl-alert{color:var(--alert)}
+          #smr-wlrf #rf-table .wl-alarm{color:var(--alarm)}
+          #smr-wlrf #rf-table .wl-critical{color:var(--critical)}
+          #smr-wlrf .wl-table-head{
+            display:grid;grid-template-columns:30% repeat(4,17.5%);
+            margin-top:.35rem;background:var(--table-header);border-bottom:2px solid var(--table-border);
+            color:var(--table-head-text);font-size:.88rem;font-weight:800
+          }
+          #smr-wlrf .wl-table-head span{padding:.72rem .85rem;text-align:right}
+          #smr-wlrf .wl-table-head span:first-child{text-align:left}
+          #smr-wlrf .rf-table-groups{
+            display:grid;grid-template-columns:24% 12% repeat(6,10.666%);
+            grid-template-rows:auto auto;margin-top:.35rem;background:var(--table-header);
+            border-bottom:2px solid var(--table-border);color:var(--table-head-text);
+            font-size:.88rem;font-weight:800;text-align:center
+          }
+          #smr-wlrf .rf-table-groups span{padding:.65rem .4rem}
+          #smr-wlrf .rf-table-groups__station{grid-column:1;grid-row:1 / span 2;display:flex;align-items:center;text-align:left}
+          #smr-wlrf .rf-table-groups__current{grid-column:2;grid-row:1;border-bottom:1px solid var(--table-border)}
+          #smr-wlrf .rf-table-groups__accumulated{grid-column:3 / span 6;grid-row:1;border-bottom:1px solid var(--table-border)}
+          #smr-wlrf .rf-table-groups__sub{grid-row:2}
+          #smr-wlrf .ffwws-accessible-head{
+            position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+            overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important
+          }
+          #smr-wlrf .wl-history-table col.station{width:30%}
+          #smr-wlrf .wl-history-table col.threshold{width:17.5%}
+          @media (min-width:768px){
+            #smr-wlrf #rf-table{display:table;table-layout:fixed;min-width:700px}
+            #smr-wlrf #rf-table thead{display:table-header-group}
+            #smr-wlrf #rf-table tbody{display:table-row-group}
+            #smr-wlrf #rf-table tbody tr{display:table-row}
+            #smr-wlrf #rf-table th,#smr-wlrf #rf-table td{display:table-cell;width:auto;white-space:nowrap}
+            #smr-wlrf #rf-table td::before{content:none}
+          }
           /* colors */
           #smr-wlrf .wl-alert, #smr-wlrf .text-alert, #smr-wlrf td.num.wl-alert{ color:var(--alert);   font-weight:600; text-shadow:0 0 1px rgba(0,0,0,.25); }
           #smr-wlrf .wl-alarm, #smr-wlrf .text-alarm, #smr-wlrf td.num.wl-alarm{ color:var(--alarm);   font-weight:600; text-shadow:0 0 1px rgba(0,0,0,.25); }
@@ -593,7 +709,7 @@
   @media (prefers-color-scheme: dark){
     .wl-card{ background:#0f172a; color:#e5e7eb; border-color:#253046; }
   }
-  .wl-title{ color:#0f172a;font-size:.78rem; font-weight:700; letter-spacing:.04em; opacity:.75; margin-bottom:.15rem; }
+  .wl-title{ color:inherit;font-size:.78rem; font-weight:700; letter-spacing:.04em; opacity:.75; margin-bottom:.15rem; }
   .wl-body{ display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; }
   .wl-value{ font-weight:800; font-size:1rem; line-height: 1; }
   .wl-site{ font-size:.9rem; opacity:.85; margin-top:.25rem; }
@@ -1046,6 +1162,50 @@
 .stack-table .wl-alarm   { color:#c2410c; }
 .stack-table .wl-critical{ color:#b91c1c; }
 
+/* === Water Level historical table: grouped two-row header === */
+.wl-history-table{
+  min-width: 820px;
+  table-layout: auto;
+}
+.wl-history-table thead tr:first-child th{
+  text-align:center;
+  background:#f8fafc;
+  color:#334155;
+  font-weight:800;
+  border-bottom:1px solid #dbe3ea;
+}
+.wl-history-table thead tr:nth-child(2) th{
+  text-align:center;
+  background:#fff;
+  font-weight:700;
+}
+.wl-history-table .wl-group-observed{ color:#334155; }
+.wl-history-table .wl-group-warning{ color:#475569; }
+.wl-history-table tbody td:first-child{
+  text-align:left;
+  color:#f97316;
+  font-weight:500;
+}
+.wl-history-table tbody td.num{
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.wl-history-table tbody tr:nth-child(even) td{
+  background:#eef6fc;
+}
+.wl-history-table tbody tr:hover td{
+  background:#f4f8fb;
+}
+@media (max-width: 640px){
+  .wl-history-table{
+    min-width:820px;
+  }
+  #smr-wlrf .wl-history-table-wrap{
+    overflow-x:auto;
+  }
+}
+
+
 /* Optional: a subtle divider between station blocks on desktop */
 @media (min-width: 577px){
   .stack-table tbody tr + tr td{ border-top:1px solid #eef2f6; }
@@ -1218,6 +1378,1495 @@
 }
 </style>
 
+
+<style id="mobile-first-dashboard-v1">
+/* ============================================================
+   MOBILE-FIRST DASHBOARD LAYOUT
+   Base styles target phones first; larger layouts are progressive
+   enhancements. Existing data/services/scripts are unchanged.
+   ============================================================ */
+
+:root{
+  --mf-gutter: 12px;
+  --mf-radius: 14px;
+  --mf-card-gap: 12px;
+  --mf-touch: 44px;
+}
+
+/* ---------- Global mobile foundation ---------- */
+html{
+  width:100%;
+  overflow-x:hidden;
+  -webkit-text-size-adjust:100%;
+}
+body{
+  width:100%;
+  min-width:0;
+  overflow-x:hidden;
+  background:var(--surface-2, #f8fafc);
+  font-size:15px;
+  line-height:1.45;
+}
+body, button, input, select, textarea{
+  -webkit-tap-highlight-color:transparent;
+}
+button, a, input[type="range"]{
+  touch-action:manipulation;
+}
+
+main.container{
+  width:100%;
+  max-width:none;
+  margin:0 !important;
+  padding:10px var(--mf-gutter) calc(18px + env(safe-area-inset-bottom)) !important;
+}
+
+/* Bootstrap rows can create horizontal overflow on narrow screens. */
+main .row{
+  --bs-gutter-x: .75rem;
+  --bs-gutter-y: .75rem;
+  margin-right:calc(-.5 * var(--bs-gutter-x));
+  margin-left:calc(-.5 * var(--bs-gutter-x));
+}
+main .row > *{
+  min-width:0;
+}
+
+.card,
+main .card{
+  border-radius:var(--mf-radius);
+  margin-bottom:var(--mf-card-gap) !important;
+  overflow:hidden;
+}
+.card-body{
+  padding:12px;
+}
+.card-header{
+  padding:10px 12px;
+  line-height:1.25;
+}
+.section-title{
+  font-size:1rem;
+}
+
+/* ---------- Sticky status bar ---------- */
+.statusbar{
+  position:sticky;
+  top:0;
+  z-index:1040;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:6px 8px;
+  padding:8px var(--mf-gutter) !important;
+  min-height:58px;
+}
+.statusbar > div:first-child{
+  grid-column:1 / -1;
+  min-width:0;
+  font-size:.9rem;
+}
+.statusbar .chip{
+  margin:0;
+  min-height:30px;
+  padding:4px 8px;
+  font-size:.72rem;
+  white-space:nowrap;
+}
+.statusbar #status-severity{
+  justify-self:end;
+  min-width:0;
+}
+.statusbar #status-severity .chip{
+  max-width:46vw;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* ---------- Operational snapshot ---------- */
+main > .card:first-child .card-body{
+  padding:12px;
+}
+main > .card:first-child .d-flex.flex-wrap.gap-2.mt-3{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px !important;
+}
+main > .card:first-child .d-flex.flex-wrap.gap-2.mt-3 .btn{
+  width:100%;
+  min-height:40px;
+  padding:.45rem .5rem;
+  font-size:.78rem;
+}
+main > .card:first-child .row.g-3 > [class*="col-"] > div{
+  padding:10px !important;
+  border-radius:12px !important;
+}
+#alert-chips{
+  min-width:0;
+  max-width:100%;
+}
+#alert-chips .chip{
+  margin:.1rem .15rem;
+  font-size:.72rem;
+}
+
+/* ---------- Current weather hero ---------- */
+.weather-hero{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  padding:12px !important;
+}
+.weather-hero > div:first-child{
+  min-width:0;
+  gap:10px !important;
+}
+.weather-hero .hero-icon,
+.weather-hero img.hero-icon{
+  width:58px !important;
+  height:58px !important;
+  flex:0 0 58px;
+}
+.weather-hero .display-5{
+  font-size:2rem;
+  line-height:1;
+  margin-bottom:3px;
+}
+.weather-hero #current-desc{
+  font-size:.9rem;
+  line-height:1.25;
+}
+.weather-hero .small{
+  font-size:.7rem !important;
+  line-height:1.35;
+}
+.weather-hero > .text-end{
+  align-self:start;
+  padding-top:1px;
+}
+.weather-hero #uv-badge{
+  font-size:.72rem;
+  padding:.35rem .55rem !important;
+}
+.weather-hero > .text-end .small{
+  font-size:.68rem !important;
+  white-space:nowrap;
+}
+
+/* Keep current conditions and metrics ahead of the optional map. */
+.weather-card .card-body{
+  padding:10px;
+}
+.weather-card .row.g-3{
+  --bs-gutter-y:.65rem;
+}
+#map{
+  width:100% !important;
+  height:300px !important;
+  border-radius:12px;
+}
+.weather-card .small.text-muted.mt-2{
+  font-size:.72rem;
+  margin-top:5px !important;
+}
+
+/* ---------- Weather metrics ---------- */
+.weather-card .metric-pill{
+  min-height:88px;
+  padding:10px;
+  border-radius:12px;
+}
+.metric-label{
+  font-size:.68rem;
+}
+.metric-value{
+  font-size:.92rem;
+  line-height:1.25;
+  overflow-wrap:anywhere;
+}
+.metric-sub{
+  font-size:.72rem;
+  line-height:1.25;
+}
+.weather-card .col-6{
+  min-width:0;
+}
+.wind-arrow{
+  margin-left:.15rem;
+}
+
+/* ---------- Water-level quick cards ---------- */
+.weather-card .wl-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:.4rem;
+}
+.weather-card .wl-card{
+  min-width:0;
+  min-height:88px;
+  padding:10px !important;
+  border-radius:12px;
+}
+.weather-card .wl-title{
+  font-size:.7rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.weather-card .wl-body{
+  display:block;
+}
+.weather-card .wl-value{
+  font-size:1.28rem;
+  line-height:1.05;
+  margin-top:3px;
+}
+.weather-card .wl-right{
+  position:static !important;
+  transform:none !important;
+  width:100%;
+  margin-top:6px;
+  justify-content:flex-start;
+}
+.weather-card .wl-badges{
+  flex-direction:row !important;
+  gap:4px;
+}
+.weather-card .wl-badge{
+  width:24px;
+  height:24px;
+  min-width:24px;
+  padding:0;
+  font-size:.65rem;
+}
+
+/* ---------- Forecast tabs ---------- */
+.nav-tabs{
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  border-bottom:1px solid var(--border,#e5e7eb);
+}
+.nav-tabs::-webkit-scrollbar{ display:none; }
+.nav-tabs .nav-item{
+  flex:0 0 auto;
+}
+.nav-tabs .nav-link{
+  min-height:42px;
+  padding:.55rem .72rem;
+  font-size:.78rem;
+  white-space:nowrap;
+}
+#alertsTabs .nav-link{
+  font-size:.76rem;
+}
+
+/* ---------- Hourly chart ---------- */
+.hourly-panel{
+  padding:10px 9px 8px !important;
+  border-radius:14px;
+}
+.hourly-panel__top{
+  flex-direction:column;
+  align-items:stretch;
+  gap:8px;
+  margin-bottom:6px;
+}
+.hourly-panel__eyebrow{
+  font-size:.64rem;
+}
+.hourly-panel__headline{
+  font-size:.88rem;
+  line-height:1.35;
+}
+.hourly-panel__legend{
+  justify-content:flex-start;
+  gap:5px;
+  overflow-x:auto;
+  flex-wrap:nowrap;
+  padding-bottom:2px;
+  scrollbar-width:none;
+}
+.hourly-panel__legend::-webkit-scrollbar{display:none}
+.hourly-legend-chip{
+  min-height:38px;
+  padding:.4rem .6rem;
+  font-size:.72rem;
+  flex:0 0 auto;
+}
+.hourly-panel__chart{
+  min-height:245px !important;
+  height:245px;
+}
+#hourlyChart{
+  width:100% !important;
+}
+
+/* ---------- Forecast tables become mobile cards ---------- */
+.forecast-scroll-wrapper{
+  max-height:none !important;
+  overflow:visible !important;
+  margin:0;
+}
+.forecast-scroll-wrapper .forecast-table{
+  display:block;
+  width:100%;
+  min-width:0 !important;
+  border:0 !important;
+  background:transparent !important;
+}
+.forecast-scroll-wrapper .forecast-table thead{
+  display:none;
+}
+.forecast-scroll-wrapper .forecast-table tbody,
+.forecast-scroll-wrapper .forecast-table tr,
+.forecast-scroll-wrapper .forecast-table td{
+  display:block;
+  width:100%;
+}
+.forecast-scroll-wrapper .forecast-table tbody tr{
+  margin:0 0 9px;
+  padding:7px 10px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  background:#fff !important;
+  box-shadow:0 1px 3px rgba(15,23,42,.05);
+}
+.forecast-scroll-wrapper .forecast-table tbody tr > td{
+  display:grid;
+  grid-template-columns:minmax(92px,42%) minmax(0,1fr);
+  gap:8px;
+  align-items:center;
+  min-height:32px;
+  padding:5px 0 !important;
+  border:0 !important;
+  border-top:1px solid #eef2f6 !important;
+  color:#111827 !important;
+  text-align:left !important;
+  background:transparent !important;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.forecast-scroll-wrapper .forecast-table tbody tr > td:first-child{
+  border-top:0 !important;
+  font-weight:700;
+}
+.forecast-scroll-wrapper .forecast-table tbody tr > td::before{
+  content:attr(data-label);
+  color:#64748b;
+  font-size:.67rem;
+  font-weight:700;
+  letter-spacing:.02em;
+  line-height:1.2;
+}
+.forecast-scroll-wrapper .forecast-table td.cell-num{
+  text-align:left !important;
+}
+.forecast-scroll-wrapper .forecast-table .chip-stack{
+  align-items:flex-start;
+}
+.forecast-scroll-wrapper .forecast-table .meter{
+  min-width:0;
+  width:100%;
+  max-width:180px;
+}
+.forecast-scroll-wrapper .forecast-table .forecast-icon-cell{
+  display:grid;
+  grid-template-columns:minmax(92px,42%) minmax(0,1fr);
+}
+.forecast-scroll-wrapper .forecast-table .forecast-icon-cell img{
+  justify-self:start;
+}
+.forecast-scroll-wrapper .forecast-table .forecast-summary-cell{
+  line-height:1.3;
+}
+/* Hourly rain card rows */
+#tab-rain .forecast-scroll-wrapper .forecast-table tbody tr > td{
+  grid-template-columns:minmax(92px,42%) minmax(0,1fr);
+}
+#tab-rain .forecast-scroll-wrapper .forecast-table .badge{
+  justify-self:start;
+}
+#tab-rain > .small.text-muted{
+  font-size:.72rem;
+  line-height:1.7;
+}
+
+/* ---------- PAGASA Synopsis ---------- */
+#pagasa-synopsis{
+  font-size:.9rem;
+  line-height:1.55;
+  margin-bottom:8px !important;
+}
+#pagasa-synopsis-updated{
+  display:block;
+  font-size:.68rem;
+  line-height:1.35;
+}
+#synopsis-severity .chip,
+#tcws-rizal-pill{
+  min-height:32px;
+}
+#synopsis-severity .chip{
+  cursor:pointer;
+}
+.card-header .d-flex.align-items-center.gap-2{
+  min-width:0;
+}
+#synopsis-severity{
+  min-width:0;
+}
+#refresh-synopsis-btn,
+#copy-synopsis-btn{
+  min-height:40px;
+  padding:.42rem .6rem;
+  font-size:.72rem;
+}
+#refresh-synopsis-btn{
+  white-space:nowrap;
+}
+
+/* ---------- FFWWS cards/tables ---------- */
+#smr-wlrf .card{
+  margin-bottom:10px !important;
+  border-radius:12px;
+}
+#smr-wlrf .hd{
+  padding:9px 10px;
+  gap:6px;
+  font-size:.78rem;
+  line-height:1.3;
+}
+#smr-wlrf .hd small{
+  font-size:.62rem;
+  white-space:nowrap;
+}
+#smr-wlrf .bd{
+  padding:9px;
+}
+#smr-wlrf .table-wrap{
+  overflow:visible;
+}
+#smr-wlrf .stack-table{
+  display:block;
+  width:100%;
+  min-width:0 !important;
+  border:0;
+  background:transparent;
+}
+#smr-wlrf .stack-table thead{
+  display:none;
+}
+#smr-wlrf .stack-table tbody,
+#smr-wlrf .stack-table tr,
+#smr-wlrf .stack-table td{
+  display:block;
+  width:100%;
+}
+#smr-wlrf .stack-table tbody tr{
+  padding:7px 9px;
+  margin-bottom:8px;
+  border:1px solid #e5e7eb;
+  border-radius:11px;
+  background:#fff;
+}
+#smr-wlrf .stack-table td{
+  display:grid;
+  grid-template-columns:minmax(88px,40%) minmax(0,1fr);
+  gap:7px;
+  align-items:center;
+  padding:5px 0 !important;
+  border:0 !important;
+  border-top:1px solid #eef2f6 !important;
+  white-space:normal;
+}
+#smr-wlrf .stack-table td:first-child{
+  border-top:0 !important;
+  font-weight:700;
+}
+#smr-wlrf .stack-table td::before{
+  content:attr(data-label);
+  color:#64748b;
+  font-size:.66rem;
+  font-weight:700;
+}
+#smr-wlrf .stack-table td.num{
+  text-align:left;
+}
+#smr-wlrf .muted{
+  font-size:.72rem;
+}
+
+/* ---------- PAGASA satellite ---------- */
+#tab-pagasa-sat{
+  padding:8px !important;
+}
+#tab-pagasa-sat > .d-flex{
+  flex-direction:column;
+  align-items:stretch !important;
+}
+#tab-pagasa-sat > .d-flex > .d-flex{
+  display:grid !important;
+  grid-template-columns:1fr 1fr;
+  gap:6px !important;
+}
+#tab-pagasa-sat > .d-flex .btn{
+  min-height:40px;
+  width:100%;
+  font-size:.7rem;
+}
+.pagasa-satellite-toolbar{
+  padding:8px 9px;
+  gap:6px;
+}
+.pagasa-satellite-toolbar .title{
+  font-size:.82rem;
+}
+.pagasa-satellite-toolbar .meta{
+  font-size:.64rem;
+}
+.pagasa-satellite-stage{
+  min-height:0 !important;
+  aspect-ratio:4 / 3;
+}
+#pagasa-satellite-img{
+  width:100%;
+  height:100%;
+  max-height:none !important;
+  object-fit:contain;
+}
+.pagasa-satellite-controls{
+  padding:9px;
+}
+.pagasa-satellite-control-row{
+  flex-direction:column;
+  align-items:stretch;
+  gap:7px;
+}
+.pagasa-satellite-control-row > button{
+  width:100%;
+  min-height:40px;
+}
+.pagasa-frame-range{
+  flex:1 1 auto;
+  width:100%;
+  min-width:0;
+}
+#pagasa-sat-range{
+  min-height:32px;
+}
+.pagasa-frame-labels{
+  font-size:.5rem;
+}
+.pagasa-satellite-progress{
+  font-size:.68rem;
+}
+.pagasa-satellite-note{
+  padding:8px 9px;
+  font-size:.7rem;
+  line-height:1.45;
+}
+
+/* ---------- YouTube ---------- */
+.youtube-container{
+  min-width:0;
+}
+.youtube-container .panel-heading{
+  align-items:stretch !important;
+}
+.youtube-container .panel-heading > div{
+  min-width:0;
+}
+.youtube-container .panel-heading > div:last-child{
+  width:100%;
+  display:grid !important;
+  grid-template-columns:1fr 1fr;
+}
+.youtube-container .panel-heading .btn{
+  min-height:38px;
+}
+#ytTitle{
+  font-size:.85rem;
+  line-height:1.3;
+}
+#ytFeatured{
+  width:100%;
+  min-height:0;
+}
+.youtube-container .ratio{
+  overflow:hidden;
+  border:1px solid rgba(15,23,42,.12);
+  border-radius:10px;
+  background:#111827;
+}
+.yt-player-message{
+  position:relative;
+  display:grid;
+  gap:.5rem;
+  margin-top:.5rem;
+  padding:.65rem;
+  border:1px solid rgba(15,23,42,.12);
+  border-radius:10px;
+  overflow:hidden;
+  background:#111827;
+  color:#f8fafc;
+}
+.yt-player-message > span{
+  display:block;
+  text-align:left;
+  font-size:.78rem;
+  line-height:1.35;
+}
+.yt-thumbnail-link{
+  display:block;
+  width:100%;
+  aspect-ratio:16 / 9;
+  overflow:hidden;
+  border-radius:6px;
+}
+.yt-thumbnail-link[hidden]{display:none}
+.yt-thumbnail-link img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+#ytWatchFallback{
+  min-height:36px;
+  display:inline-flex;
+  align-items:center;
+}
+.yt-player-message[hidden]{display:none!important}
+
+/* ---------- PAGASA image cards ---------- */
+main > .row.g-3.mt-2{
+  --bs-gutter-x:.5rem;
+  --bs-gutter-y:.5rem;
+}
+main > .row.g-3.mt-2 > [class*="col-"]{
+  padding-right:4px;
+  padding-left:4px;
+}
+main > .row.g-3.mt-2 .card{
+  border-radius:10px;
+  margin-bottom:0 !important;
+}
+main > .row.g-3.mt-2 .card-img-top{
+  height:92px !important;
+  object-fit:cover;
+}
+main > .row.g-3.mt-2 .card-body{
+  min-height:42px;
+  padding:7px 5px !important;
+  font-size:.66rem !important;
+  line-height:1.25;
+}
+
+/* ---------- Fullscreen image modal / touch ---------- */
+#imageModal .modal-header{
+  min-height:52px;
+  padding:8px 10px;
+}
+#imageModal .modal-title{
+  font-size:.9rem;
+}
+#pzToolbar{
+  right:8px !important;
+  top:8px !important;
+}
+#pzToolbar .btn{
+  min-width:44px;
+  min-height:40px;
+}
+#imageModal .image-viewport{
+  touch-action:none;
+}
+
+/* ---------- Footer ---------- */
+footer{
+  padding:14px 12px !important;
+  font-size:.72rem !important;
+}
+footer .container{
+  width:100%;
+  max-width:none;
+  padding:0 !important;
+}
+
+/* ---------- Narrow phones ---------- */
+@media (max-width:360px){
+  :root{ --mf-gutter:9px; }
+  .statusbar{
+    grid-template-columns:1fr;
+  }
+  .statusbar #status-severity{
+    justify-self:start;
+  }
+  .weather-hero{
+    grid-template-columns:1fr;
+  }
+  .weather-hero > .text-end{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding-top:0;
+  }
+  .weather-hero > .text-end .small{
+    margin-top:0 !important;
+  }
+  .weather-card .metric-pill{
+    min-height:82px;
+  }
+  main > .card:first-child .d-flex.flex-wrap.gap-2.mt-3{
+    grid-template-columns:1fr;
+  }
+  #tab-pagasa-sat > .d-flex > .d-flex{
+    grid-template-columns:1fr;
+  }
+  .forecast-scroll-wrapper .forecast-table tbody tr > td{
+    grid-template-columns:88px minmax(0,1fr);
+  }
+}
+
+/* ============================================================
+   TABLET / DESKTOP ENHANCEMENTS
+   ============================================================ */
+@media (min-width:576px){
+  .forecast-column-header{display:grid}
+  main.container{
+    padding-left:16px !important;
+    padding-right:16px !important;
+  }
+  .statusbar{
+    display:flex !important;
+    flex-wrap:wrap;
+    align-items:center;
+    min-height:0;
+  }
+  .statusbar > div:first-child{
+    grid-column:auto;
+    font-size:inherit;
+  }
+  .statusbar .chip{
+    min-height:32px;
+    font-size:.78rem;
+  }
+  main > .card:first-child .d-flex.flex-wrap.gap-2.mt-3{
+    display:flex !important;
+  }
+  main > .card:first-child .d-flex.flex-wrap.gap-2.mt-3 .btn{
+    width:auto;
+  }
+  .weather-hero{
+    grid-template-columns:minmax(0,1fr) auto;
+  }
+  #map{
+    height:360px !important;
+  }
+  .forecast-scroll-wrapper{
+    overflow:auto !important;
+    max-height:520px !important;
+  }
+  .forecast-scroll-wrapper .forecast-table{
+    display:table;
+    min-width:900px !important;
+  }
+  .forecast-scroll-wrapper .forecast-table--daily{min-width:1450px!important}
+  .forecast-scroll-wrapper .forecast-table--hourly-rain{min-width:900px!important}
+  .forecast-scroll-wrapper .forecast-table thead{
+    display:table-header-group;
+  }
+  .forecast-scroll-wrapper .forecast-table tbody{
+    display:table-row-group;
+  }
+  .forecast-scroll-wrapper .forecast-table tbody tr{
+    display:table-row;
+    margin:0;
+    padding:0;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+  }
+  .forecast-scroll-wrapper .forecast-table tbody tr > td{
+    display:table-cell;
+    width:auto;
+    min-height:0;
+    padding:.55rem .6rem !important;
+    border:inherit !important;
+    white-space:nowrap;
+  }
+  .forecast-scroll-wrapper .forecast-table tbody tr > td::before{
+    content:none;
+  }
+  .forecast-scroll-wrapper .forecast-table--daily .forecast-icon-cell{display:table-cell!important}
+  .forecast-scroll-wrapper .forecast-table--daily .forecast-summary-cell{
+    white-space:normal!important;overflow-wrap:anywhere;line-height:1.35
+  }
+  #smr-wlrf .stack-table{
+    display:table;
+    min-width:540px !important;
+  }
+  #smr-wlrf .stack-table thead{
+    display:table-header-group;
+  }
+  #smr-wlrf .stack-table tbody{
+    display:table-row-group;
+  }
+  #smr-wlrf .stack-table tbody tr{
+    display:table-row;
+    padding:0;
+    margin:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+  }
+  #smr-wlrf .stack-table td{
+    display:table-cell;
+    width:auto;
+    padding:.56rem .6rem !important;
+    border:inherit !important;
+    white-space:nowrap;
+  }
+  #smr-wlrf .stack-table td::before{
+    content:none;
+  }
+  #smr-wlrf .stack-table td.num{
+    text-align:right;
+  }
+  #tab-pagasa-sat > .d-flex{
+    flex-direction:row;
+    align-items:center !important;
+  }
+  #tab-pagasa-sat > .d-flex > .d-flex{
+    display:flex !important;
+    width:auto;
+  }
+  #tab-pagasa-sat > .d-flex .btn{
+    width:auto;
+  }
+  .pagasa-satellite-control-row{
+    flex-direction:row;
+    align-items:center;
+  }
+  .pagasa-satellite-control-row > button{
+    width:auto;
+  }
+  .pagasa-frame-range{
+    min-width:220px;
+  }
+  main > .row.g-3.mt-2 .card-img-top{
+    height:120px !important;
+  }
+}
+
+@media (min-width:768px){
+  main.container{
+    max-width:1100px;
+    padding-top:16px !important;
+  }
+  .card-body{
+    padding:14px;
+  }
+  .weather-hero{
+    display:flex !important;
+    padding:16px !important;
+  }
+  .weather-hero .hero-icon,
+  .weather-hero img.hero-icon{
+    width:72px !important;
+    height:72px !important;
+    flex-basis:72px;
+  }
+  .weather-hero .display-5{
+    font-size:2.6rem;
+  }
+  .hourly-panel__chart{
+    min-height:300px !important;
+    height:300px;
+  }
+  #map{
+    height:420px !important;
+  }
+}
+
+@media (min-width:992px){
+  main.container{
+    max-width:1200px;
+    padding-left:18px !important;
+    padding-right:18px !important;
+  }
+  #map{
+    height:500px !important;
+  }
+  .statusbar{
+    padding-left:max(18px, calc((100vw - 1200px)/2 + 18px)) !important;
+    padding-right:max(18px, calc((100vw - 1200px)/2 + 18px)) !important;
+  }
+}
+</style>
+
+
+
+<style id="mobile-first-polish-v2">
+/* ============================================================
+   MOBILE-FIRST POLISH v2
+   - Desktop status stays on one line; mobile keeps key controls visible
+   - Operational Snapshot remains clean and readable on phones
+   - Explicit dark-mode text/background colors override Bootstrap
+   ============================================================ */
+
+/* ---------- Status bar: single horizontal strip ---------- */
+.statusbar{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  gap:10px !important;
+  width:100%;
+  min-height:56px;
+  padding:8px 12px !important;
+  overflow-x:auto;
+  overflow-y:hidden;
+  white-space:nowrap;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.statusbar::-webkit-scrollbar{display:none}
+.statusbar > div:first-child{
+  flex:1 1 auto !important;
+  min-width:max-content !important;
+  margin-right:auto !important;
+  font-size:.9rem !important;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.statusbar .chip{
+  flex:0 0 auto !important;
+  display:inline-flex !important;
+  align-items:center;
+  min-height:32px;
+  margin:0 !important;
+  padding:5px 10px !important;
+  font-size:.76rem !important;
+  line-height:1.15;
+  color:#fff !important;
+  background:rgba(255,255,255,.18) !important;
+  border:1px solid rgba(255,255,255,.12);
+}
+.statusbar #status-severity{
+  flex:0 0 auto !important;
+  display:inline-flex;
+  min-width:max-content;
+  margin-left:0 !important;
+}
+.statusbar #status-severity .chip{
+  max-width:none !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+
+/* Keep the status strip compact on phones. */
+@media (max-width:576px){
+  .statusbar{
+    min-height:52px;
+    gap:6px !important;
+    padding:7px 9px !important;
+  }
+  .statusbar > div:first-child{
+    font-size:.78rem !important;
+  }
+  .statusbar .chip{
+    min-height:30px;
+    padding:4px 8px !important;
+    font-size:.68rem !important;
+  }
+}
+
+/* Very narrow phones: keep the same one-line visual language. */
+@media (max-width:390px){
+  .statusbar > div:first-child{font-size:.74rem !important}
+  .statusbar .chip{font-size:.64rem !important; padding:4px 7px !important}
+}
+
+/* ---------- Operational Snapshot ---------- */
+main > .card:first-child .section-title{
+  color:var(--text) !important;
+  font-weight:800 !important;
+  letter-spacing:-.01em;
+}
+main > .card:first-child .row.g-3 > [class*="col-"] > div{
+  background:var(--surface-2) !important;
+  border-color:var(--border) !important;
+  color:var(--text) !important;
+}
+main > .card:first-child .row.g-3 > [class*="col-"] > div > .fw-bold{
+  color:var(--text) !important;
+}
+#sitrep,
+#impacts,
+#actions-list,
+#actions-list li,
+#actions-ai,
+#actions-ai-list,
+#actions-ai-list li{
+  color:var(--text) !important;
+}
+#impacts,
+#actions-list,
+#actions-ai-list,
+main > .card:first-child .small-muted{
+  color:var(--muted) !important;
+}
+main > .card:first-child .text-muted,
+main > .card:first-child #actions-ai-note{
+  color:var(--muted) !important;
+}
+#alert-chips .chip{
+  color:var(--text) !important;
+  border:1px solid var(--border);
+}
+
+/* ---------- General dark-mode readability ---------- */
+@media (prefers-color-scheme:dark){
+  body{
+    background:var(--surface-1) !important;
+    color:var(--text) !important;
+  }
+  .card,
+  .card-body{
+    color:var(--text);
+  }
+  .text-muted,
+  .small-muted,
+  .small.text-muted,
+  .form-text,
+  .legend,
+  .hourly-panel__summary,
+  .hourly-panel__headline{
+    color:var(--muted) !important;
+  }
+  .fw-bold,
+  .fw-semibold,
+  .section-title,
+  h1,h2,h3,h4,h5,h6,
+  .card-title,
+  .card-body strong,
+  .card-body label{
+    color:var(--text) !important;
+  }
+
+  /* Operational Snapshot cards */
+  main > .card:first-child .card-body{
+    background:var(--surface-1) !important;
+  }
+  main > .card:first-child .row.g-3 > [class*="col-"] > div{
+    background:var(--surface-2) !important;
+    border-color:var(--border) !important;
+    color:var(--text) !important;
+  }
+  main > .card:first-child #sitrep,
+  main > .card:first-child #impacts,
+  main > .card:first-child #actions-list,
+  main > .card:first-child #actions-list li,
+  main > .card:first-child #actions-ai,
+  main > .card:first-child #actions-ai-list,
+  main > .card:first-child #actions-ai-list li{
+    color:var(--text) !important;
+  }
+  main > .card:first-child #impacts,
+  main > .card:first-child #actions-ai-note{
+    color:#cbd5e1 !important;
+  }
+
+  /* Bootstrap links/buttons */
+  .btn-outline-secondary{color:#cbd5e1;border-color:#64748b}
+  .btn-outline-secondary:hover{color:#fff;background:#334155}
+  .btn-light{color:#111827 !important;background:#f8fafc !important;border-color:#cbd5e1 !important}
+
+  /* Tables: preserve deliberately light forecast tables, with strong text */
+  .forecast-table,
+  .forecast-table th,
+  .forecast-table td{
+    color:#111827 !important;
+  }
+
+  /* Navigation tabs */
+  .nav-tabs{border-bottom-color:var(--border)}
+  .nav-tabs .nav-link{color:#cbd5e1 !important}
+  .nav-tabs .nav-link.active{
+    color:#f8fafc !important;
+    background:var(--surface-2) !important;
+    border-color:var(--border) var(--border) var(--surface-2) !important;
+  }
+
+  /* Common Bootstrap muted text that otherwise becomes too faint */
+  .text-secondary{color:#cbd5e1 !important}
+  .text-body-secondary{color:#cbd5e1 !important}
+}
+
+/* ---------- Touch / readability ---------- */
+@media (max-width:576px){
+  main > .card:first-child .card-body{padding:12px !important}
+  main > .card:first-child .row.g-3{gap:8px !important}
+  main > .card:first-child .row.g-3 > [class*="col-"] > div{
+    padding:11px !important;
+    border-radius:12px !important;
+  }
+  main > .card:first-child .row.g-3 > [class*="col-"] > div > .fw-bold{
+    font-size:.95rem;
+    margin-bottom:5px !important;
+  }
+  #sitrep,#impacts,#actions-list{font-size:.9rem !important;line-height:1.5}
+  #actions-list{padding-left:1.15rem}
+}
+</style>
+
+<style id="map-mobile-access-fix">
+/* ============================================================
+   MAP ACCESSIBILITY + MOBILE-FIRST MAP POLISH
+   ============================================================ */
+.map-shell{
+  position:relative;
+  width:100%;
+}
+#map{
+  width:100%;
+  position:relative;
+  isolation:isolate;
+  background:var(--surface-3,#eef2f7);
+}
+
+/* Clean fallback if a tile provider becomes unavailable.
+   Hidden during normal operation so there is no distracting block. */
+.map-tile-status{
+  position:absolute;
+  inset:50% auto auto 50%;
+  transform:translate(-50%,-50%);
+  z-index:1200;
+  width:min(88%,360px);
+  display:flex;
+  align-items:center;
+  gap:.65rem;
+  padding:.7rem .8rem;
+  border:1px solid var(--border,#e5e7eb);
+  border-radius:14px;
+  background:rgba(255,255,255,.96);
+  color:#172033;
+  box-shadow:0 10px 28px rgba(15,23,42,.18);
+  backdrop-filter:blur(8px);
+}
+.map-tile-status[hidden]{display:none!important}
+.map-tile-status__icon{font-size:1.25rem;flex:0 0 auto}
+.map-tile-status__text{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+.map-tile-status__text strong{font-size:.8rem}
+.map-tile-status__text span{font-size:.7rem;color:#64748b;margin-top:.15rem}
+.map-tile-status .btn{margin-left:auto;flex:0 0 auto}
+
+/* Compact, readable weather-layer menu */
+.leaflet-control-wx{
+  width:210px;
+  max-width:calc(100vw - 32px);
+  background:rgba(18,58,64,.95);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;
+  padding:.5rem;
+  box-shadow:0 10px 26px rgba(0,0,0,.28);
+  backdrop-filter:blur(8px);
+}
+.leaflet-control-wx .wx-title{
+  color:#dffcff;
+  opacity:1;
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.06em;
+  padding:.3rem .45rem .4rem;
+}
+.wx-item{
+  min-height:42px;
+  color:#f8fafc;
+}
+.wx-item:hover{background:rgba(255,255,255,.10)}
+.wx-item.active{
+  background:rgba(255,255,255,.20);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+}
+.wx-item:focus-visible{
+  outline:2px solid #7dd3fc;
+  outline-offset:-2px;
+}
+.wx-icon{color:#fff}
+
+/* Keep Leaflet attribution readable on both themes */
+.leaflet-control-attribution{
+  background:rgba(255,255,255,.88)!important;
+  color:#334155!important;
+  border-radius:7px 0 0 0;
+  font-size:10px;
+  line-height:1.25;
+}
+.leaflet-control-attribution a{color:#075985!important}
+
+/* Mobile: don't let the map menu consume the whole map */
+@media (max-width:576px){
+  .map-shell{margin-top:.1rem}
+  #map{
+    height:300px!important;
+    min-height:300px;
+    border-radius:14px!important;
+  }
+  .leaflet-control-wx{
+    width:178px;
+    max-width:calc(100vw - 42px);
+    padding:.35rem;
+    border-radius:12px;
+  }
+  .leaflet-control-wx .wx-title{
+    font-size:.65rem;
+    padding:.25rem .4rem .3rem;
+  }
+  .wx-item{
+    min-height:38px;
+    padding:.35rem .45rem;
+    gap:.45rem;
+    font-size:.82rem;
+    border-radius:9px;
+  }
+  .wx-icon{width:20px;height:20px}
+  .leaflet-control-zoom{
+    margin-right:6px!important;
+    margin-bottom:6px!important;
+  }
+  .leaflet-control-zoom a{
+    width:34px!important;
+    height:34px!important;
+    line-height:34px!important;
+  }
+  .leaflet-control-attribution{
+    font-size:9px;
+    max-width:72%;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+}
+
+@media (max-width:576px){
+  .leaflet-control-wx.is-collapsed{
+    width:auto;
+    min-width:138px;
+    padding:.25rem .4rem;
+  }
+  .leaflet-control-wx.is-collapsed .wx-list{display:none}
+  .leaflet-control-wx.is-collapsed .wx-title{
+    margin:0;
+    padding:.35rem .4rem;
+    min-height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+}
+
+/* Very narrow phones: keep the menu compact */
+@media (max-width:390px){
+  .leaflet-control-wx{width:164px}
+  .wx-item{min-height:36px;font-size:.78rem}
+  #map{height:280px!important;min-height:280px}
+}
+
+/* Dark-mode fallback/status readability */
+@media (prefers-color-scheme:dark){
+  .map-tile-status{
+    background:rgba(15,23,42,.97);
+    color:#f8fafc;
+    border-color:#334155;
+  }
+  .map-tile-status__text span{color:#cbd5e1}
+  .leaflet-control-attribution{
+    background:rgba(15,23,42,.90)!important;
+    color:#e2e8f0!important;
+  }
+  .leaflet-control-attribution a{color:#7dd3fc!important}
+}
+</style>
+<style id="app-theme-styles">
+  html[data-theme="light"]{color-scheme:light}
+  html[data-theme="dark"]{color-scheme:dark}
+  html[data-theme="light"]{
+    --surface-1:#f1f5f9;--surface-2:#ffffff;--surface-3:#e2e8f0;
+    --text:#172033;--muted:#64748b;--border:#d8e0ea;
+  }
+  html[data-theme="dark"]{
+    --surface-1:#0b1220;--surface-2:#111827;--surface-3:#1f2937;
+    --text:#e5e7eb;--muted:#9ca3af;--border:#334155;
+  }
+  html[data-theme] body{background:var(--surface-1)!important;color:var(--text)!important}
+  html[data-theme] .statusbar{color:#fff}
+  html[data-theme] main > .card,
+  html[data-theme] main .card:not(.weather-card):not(.weather-hero){
+    background:var(--surface-2);color:var(--text);border-color:var(--border)
+  }
+  html[data-theme] .card-body{color:var(--text)}
+  html[data-theme] .map-section .card-header{
+    background:var(--surface-2);color:var(--text);border-color:var(--border)
+  }
+  html[data-theme] .text-muted,
+  html[data-theme] .small-muted,
+  html[data-theme] .small.text-muted{color:var(--muted)!important}
+  html[data-theme] .nav-tabs{border-bottom-color:var(--border)}
+  html[data-theme] .nav-tabs .nav-link{color:var(--muted)}
+  html[data-theme] .nav-tabs .nav-link.active{
+    color:var(--text)!important;background:var(--surface-2)!important;border-color:var(--border) var(--border) var(--surface-2)!important
+  }
+  html[data-theme] .forecast-table,
+  html[data-theme] .forecast-table th,
+  html[data-theme] .forecast-table td{
+    color:var(--text)!important;background-color:var(--surface-2)
+  }
+  html[data-theme] .metric-pill{
+    background:var(--surface-2)!important;border-color:var(--border)!important
+  }
+  html[data-theme] .metric-label,
+  html[data-theme] .metric-value,
+  html[data-theme] .metric-sub,
+  html[data-theme] .wind-arrow{color:var(--text)!important}
+  html[data-theme="dark"] .metric-sub,
+  html[data-theme="dark"] .metric-label,
+  html[data-theme="dark"] .wind-arrow{color:var(--muted)!important}
+  html[data-theme] .weather-card .wl-card{
+    background:var(--surface-2);color:var(--text);border-color:var(--border)
+  }
+  html[data-theme] .weather-card .wl-title{color:var(--text)}
+  html[data-theme="dark"] .weather-card .wl-card{
+    border-color:#475569;
+  }
+  html[data-theme="dark"] .weather-card .wl-card .wl-title,
+  html[data-theme="dark"] .weather-card .wl-card .wl-site{
+    color:#cbd5e1!important;
+    opacity:1;
+  }
+  html[data-theme="dark"] .weather-card .wl-card .wl-value{
+    color:#f8fafc!important;
+  }
+  html[data-theme="dark"] .weather-card .wl-card .wl-unit{
+    color:#cbd5e1!important;
+  }
+  html[data-theme="light"] .text-secondary,
+  html[data-theme="light"] .text-body-secondary{
+    color:#475569!important;
+  }
+  html[data-theme="light"] .btn-outline-secondary{
+    color:#475569!important;
+    border-color:#64748b!important;
+  }
+  html[data-theme="dark"] .map-tile-status{
+    background:rgba(15,23,42,.97);
+    color:#f8fafc;
+    border-color:#334155;
+  }
+  html[data-theme="dark"] .map-tile-status__text span{color:#cbd5e1}
+  html[data-theme="dark"] .leaflet-control-attribution{
+    background:rgba(15,23,42,.90)!important;
+    color:#e2e8f0!important;
+  }
+  html[data-theme="dark"] .leaflet-control-attribution a{color:#7dd3fc!important}
+  html[data-theme="light"] .leaflet-control-attribution{
+    background:rgba(255,255,255,.88)!important;
+    color:#334155!important;
+  }
+  html[data-theme="light"] .leaflet-control-attribution a{color:#075985!important}
+  #theme-toggle{white-space:nowrap}
+  #smr-wlrf .wl-history-table{width:100%;min-width:0!important;table-layout:fixed}
+  #smr-wlrf #rf-table{width:100%;min-width:0!important;table-layout:fixed}
+  #smr-wlrf .wl-history-table th,
+  #smr-wlrf .wl-history-table td,
+  #smr-wlrf #rf-table th,
+  #smr-wlrf #rf-table td{padding:.72rem .85rem}
+  #smr-wlrf .wl-history-table tbody td:first-child{text-align:left}
+  #smr-wlrf .wl-history-table tbody td.num,
+  #smr-wlrf #rf-table tbody td.num{text-align:right}
+  #smr-wlrf .rf-legend-item{background:var(--surface-2);border-color:var(--border)}
+  @media (min-width:576px){
+    #smr-wlrf .stack-table{display:table!important;width:100%;min-width:0!important}
+    #smr-wlrf .stack-table thead{display:table-header-group!important}
+    #smr-wlrf .stack-table tbody{display:table-row-group!important}
+    #smr-wlrf .stack-table tbody tr{display:table-row!important;background:var(--table-row);border:0;border-radius:0;padding:0}
+    #smr-wlrf .stack-table th,#smr-wlrf .stack-table td{display:table-cell!important;width:auto;padding:.72rem .85rem!important;white-space:nowrap}
+    #smr-wlrf .stack-table td::before{content:none!important}
+  }
+  @media (max-width:575.98px){
+    .forecast-column-header{display:none}
+    #theme-toggle{font-size:.72rem;padding:.35rem .5rem}
+    #smr-wlrf .rf-table-groups,
+    #smr-wlrf .wl-table-head{display:none}
+  }
+  @media (max-width:575.98px){
+    .statusbar{
+      display:grid!important;
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      align-items:center;
+      gap:5px 8px!important;
+      min-height:0;
+      flex-shrink:0;
+      padding:7px 10px!important;
+      overflow:visible;
+      white-space:normal;
+    }
+    .statusbar > div:first-child{
+      grid-column:1;
+      grid-row:1;
+      min-width:0!important;
+      width:auto;
+      margin:0!important;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-size:.8rem!important;
+    }
+    .statusbar #theme-toggle{
+      grid-column:2;
+      grid-row:1;
+      justify-self:end;
+      min-height:32px;
+    }
+    .statusbar > .chip{
+      width:100%;
+      min-width:0;
+      justify-content:center;
+    }
+    .statusbar > .chip:nth-child(2){
+      grid-column:1;
+      grid-row:2;
+    }
+    .statusbar > .chip:nth-child(3){
+      grid-column:2;
+      grid-row:2;
+    }
+    .statusbar > .chip{
+      padding:4px 6px!important;
+      font-size:.62rem!important;
+      line-height:1.15;
+    }
+    .statusbar > #status-severity{
+      grid-column:1/-1;
+      grid-row:3;
+      display:flex!important;
+      justify-content:center;
+      justify-self:stretch;
+      min-width:0!important;
+    }
+    .statusbar > #status-severity:empty{display:none!important}
+    .statusbar #status-severity .chip{
+      max-width:100%!important;
+      white-space:normal!important;
+      text-align:center;
+    }
+  }
+</style>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -1228,6 +2877,8 @@
     <div class="chip"><span>PH Time:</span><span id="ph-time">--:--:--</span></div>
     <div class="chip"><span>Updated:</span><span id="last-updated">—</span></div>
     <span id="status-severity"></span>
+    <button id="theme-toggle" class="btn btn-sm btn-light fw-semibold" type="button" aria-pressed="false">☀️ Clear mode</button>
+    <button id="install-app" class="btn btn-sm btn-light fw-semibold" type="button" hidden>Install app</button>
   </div>
 
   <main class="container py-3">
@@ -1282,7 +2933,7 @@
     <div class="card weather-card shadow-sm mb-3">
       <div class="weather-hero d-flex align-items-center justify-content-between p-3 p-md-4">
         <div class="d-flex align-items-center gap-3">
-          <img id="main-icon" class="hero-icon" alt="icon" />
+          <img id="main-icon" class="hero-icon" alt="" aria-hidden="true" />
           <div>
             <div class="display-5 fw-bold lh-1" id="current-temp">--°C</div>
             <div class="text-white-75" id="current-desc">—</div>
@@ -1302,14 +2953,8 @@
 
       <div class="card-body pt-3">
         <div class="row g-3 align-items-stretch">
-          <!-- Map -->
-          <div class="col-12 col-lg-7">
-            <div class="map-overlay" id="map" class="rounded-3 overflow-hidden border" style="border-color:var(--border)"></div>
-            <div class="small text-muted mt-2">Map: San Mateo, Rizal, Phil.</div>
-          </div>
-
           <!-- Metrics -->
-          <div class="col-12 col-lg-5">
+          <div class="col-12">
             <div class="row g-2">
               <div class="col-6">
                 <div class="metric-pill">
@@ -1424,8 +3069,27 @@
       <!-- 7-Day Table -->
       <div class="tab-pane fade" id="tab-daily" role="tabpanel">
         <div class="forecast-scroll-wrapper table-responsive">
-          <table class="table table-bordered align-middle mb-0 forecast-table">
-            <thead>
+          <div class="forecast-column-header forecast-column-header--daily" aria-hidden="true">
+            <span>Date</span><span>Summary</span><span>Icon</span><span>Min/Max<br>(°C)</span>
+            <span>Feels D/N<br>(°C)</span><span>Humidity</span><span>Pressure</span><span>Clouds</span>
+            <span>Wind<br>m/s</span><span>POP<br>%</span><span>Rain<br>mm</span><span>UVI</span>
+          </div>
+          <table class="table table-bordered align-middle mb-0 forecast-table forecast-table--daily">
+            <colgroup>
+              <col style="width:9%">
+              <col style="width:25%">
+              <col style="width:5%">
+              <col style="width:9%">
+              <col style="width:9%">
+              <col style="width:7%">
+              <col style="width:7%">
+              <col style="width:6%">
+              <col style="width:8%">
+              <col style="width:6%">
+              <col style="width:6%">
+              <col style="width:3%">
+            </colgroup>
+            <thead class="visually-hidden">
               <tr>
                 <th>Date</th>
                 <th>Summary</th>
@@ -1449,8 +3113,19 @@
 <!-- Hourly Rain (6h) -->
 <div class="tab-pane fade" id="tab-rain" role="tabpanel" aria-labelledby="tab-rain-btn">
   <div class="forecast-scroll-wrapper table-responsive">
-    <table class="table table-bordered align-middle mb-0 forecast-table text-center">
-      <thead>
+    <div class="forecast-column-header forecast-column-header--hourly-rain" aria-hidden="true">
+      <span>Date</span><span>Day</span><span>Hour</span><span>Rain (mm)</span><span>Probability (%)</span><span>Intensity</span>
+    </div>
+    <table class="table table-bordered align-middle mb-0 forecast-table forecast-table--hourly-rain text-center">
+      <colgroup>
+        <col style="width:18%">
+        <col style="width:10%">
+        <col style="width:16%">
+        <col style="width:16%">
+        <col style="width:22%">
+        <col style="width:18%">
+      </colgroup>
+      <thead class="visually-hidden">
         <tr>
           <th>Date</th>
           <th>Day</th>
@@ -1538,8 +3213,22 @@
             </div>
             <div class="bd">
               <div id="wl-note" class="muted mb-2"></div>
-              <table class="rtable stack-table" id = "wl-table" aria-label="Selected FFWWS stations (Water Level)">
-                <thead>
+              <div class="wl-table-head" aria-hidden="true">
+                <span>Station</span>
+                <span>WL [EL.m]</span>
+                <span>Alert [EL.m]</span>
+                <span>Alarm [EL.m]</span>
+                <span>Critical [EL.m]</span>
+              </div>
+              <table class="rtable stack-table wl-history-table" id="wl-table" aria-label="Selected FFWWS stations (Water Level)">
+                <colgroup>
+                  <col class="station">
+                  <col class="threshold">
+                  <col class="threshold">
+                  <col class="threshold">
+                  <col class="threshold">
+                </colgroup>
+                <thead class="ffwws-accessible-head">
                   <tr>
                     <th>Station</th>
                     <th class="num">WL [EL.m]</th>
@@ -1563,19 +3252,37 @@
             </div>
             <div class="bd">
               <div id="rf-note" class="muted mb-2"></div>
-              <div class="muted mb-2">
-                <span class="text-alert fw-bold">Heavy ≥ 7.5 mm</span> ·
-                <span class="text-alarm fw-bold">Intense ≥ 15 mm</span> ·
-                <span class="text-critical fw-bold">Torrential ≥ 30 mm</span>
+              <div class="rf-legend" aria-label="Rainfall intensity thresholds">
+                <span class="rf-legend-item rf-legend-item--heavy">Heavy ≥ 7.5 mm</span>
+                <span class="rf-legend-item rf-legend-item--intense">Intense ≥ 15 mm</span>
+                <span class="rf-legend-item rf-legend-item--torrential">Torrential ≥ 30 mm</span>
               </div>
-              <table class="rtable stack-table" id = "wl-table" aria-label="FFWWS Rainfall">
-                <thead>
+              <div class="rf-table-groups" aria-hidden="true">
+                <span class="rf-table-groups__station">Station</span>
+                <span class="rf-table-groups__current">RF [mm]</span>
+                <span class="rf-table-groups__accumulated">Accumulated RF [mm]</span>
+                <span class="rf-table-groups__sub">Current</span>
+                <span class="rf-table-groups__sub">30 min</span>
+                <span class="rf-table-groups__sub">1 hr</span>
+                <span class="rf-table-groups__sub">3 hr</span>
+                <span class="rf-table-groups__sub">6 hr</span>
+                <span class="rf-table-groups__sub">12 hr</span>
+                <span class="rf-table-groups__sub">24 hr</span>
+              </div>
+              <table class="rtable stack-table" id="rf-table" aria-label="FFWWS Rainfall">
+                <colgroup>
+                  <col style="width:24%">
+                  <col style="width:12%">
+                  <col style="width:10.67%">
+                  <col style="width:10.67%">
+                  <col style="width:10.67%">
+                  <col style="width:10.67%">
+                  <col style="width:10.66%">
+                  <col style="width:10.66%">
+                </colgroup>
+                <thead class="ffwws-accessible-head">
                   <tr>
-                    <th rowspan="2">Station</th>
-                    <th colspan="1" class="num">RF [mm]</th>
-                    <th colspan="6" class="num">Accumulated RF [mm]</th>
-                  </tr>
-                  <tr>
+                    <th>Station</th>
                     <th class="num">Current</th>
                     <th class="num">30 min</th>
                     <th class="num">1hr</th>
@@ -1799,34 +3506,17 @@
          DashboardCore, or DashboardScheduler.
          ============================================================ -->
     <script>
-      let APP_CONFIG;
-      const APP_CONFIG_READY = fetch("constants.json", { cache: "no-store" })
-        .then(response => {
-          if (!response.ok) throw new Error(`constants.json request failed: ${response.status}`);
-          return response.json();
-        })
-        .then(settings => {
-          if (!settings.api || !settings.youtube || !settings.external) {
-            throw new Error("constant.txt is missing a required settings section.");
-          }
-          APP_CONFIG = Object.freeze({
-            app: {
-              name: "San Mateo Weather & Situational Dashboard",
-              version: "2.3.4",
-              timezone: "Asia/Manila",
-              locale: "en-PH"
-            },
-            refresh: {
-              clock: 1000,
-              weather: 15 * 60 * 1000,
-              youtube: 15 * 60 * 1000,
-              ffwws: 60 * 60 * 1000,
-              images: 30 * 60 * 1000
-            },
-            ...settings
-          });
-          return APP_CONFIG;
-        });
+      const APP_CONFIG = (() => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "./constants.json", false);
+        xhr.send(null);
+
+        if (xhr.status !== 200) {
+          throw new Error("Failed to load application constants from constants.json");
+        }
+
+        return Object.freeze(JSON.parse(xhr.responseText));
+      })();
 
       const DashboardCore = (() => {
         const storage = {
@@ -1988,14 +3678,23 @@
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen></iframe>
         </div>
+        <div id="ytPlayerMessage" class="yt-player-message" role="status" aria-live="polite" hidden>
+          <span id="ytPlayerMessageText">The video player could not load. You can still watch the update on YouTube.</span>
+          <a id="ytThumbnailLink" class="yt-thumbnail-link"
+             href="https://www.youtube.com/@DOST_PAGASA/videos"
+             target="_blank" rel="noopener noreferrer" hidden>
+            <img id="ytVideoThumbnail" alt="" />
+          </a>
+          <a id="ytWatchFallback" class="btn btn-sm btn-danger" href="https://www.youtube.com/@DOST_PAGASA/videos"
+             target="_blank" rel="noopener noreferrer">Watch on YouTube</a>
+        </div>
       </div>
     </div>
 
     <script>
       /* ============================================================
          DOST-PAGASA YOUTUBE MODULE v4
-         Uses a server-verified Apps Script HTML embed endpoint.
-         JSONP remains available for metadata, but the iframe does not depend on it.
+         Uses YouTube Data API metadata and the verified Apps Script embed endpoint.
          ============================================================ */
       const YouTubeModule = (() => {
         /*
@@ -2028,6 +3727,104 @@
         const stamp = () => document.getElementById("ytUpdated");
         const titleNode = () => document.getElementById("ytTitle");
         const badge = () => document.getElementById("ytStatusBadge");
+        const playerMessage = () => document.getElementById("ytPlayerMessage");
+        const playerMessageText = () => document.getElementById("ytPlayerMessageText");
+        const videoThumbnail = () => document.getElementById("ytVideoThumbnail");
+        const thumbnailLink = () => document.getElementById("ytThumbnailLink");
+        const watchFallback = () => document.getElementById("ytWatchFallback");
+        let embedTimeout = null;
+        let embedRequest = 0;
+
+        function showPlayerMessage(text, url, videoId = "") {
+          const message = playerMessage();
+          const messageText = playerMessageText();
+          const thumbnail = videoThumbnail();
+          const thumbnailAnchor = thumbnailLink();
+          const watchLink = watchFallback();
+          if (messageText) messageText.textContent = text;
+          if (watchLink && url) watchLink.href = url;
+          if (thumbnailAnchor && thumbnail && validVideoId(videoId)) {
+            thumbnailAnchor.href = url;
+            thumbnailAnchor.hidden = false;
+            thumbnailAnchor.removeAttribute("aria-hidden");
+            thumbnailAnchor.removeAttribute("tabindex");
+            thumbnail.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            thumbnail.alt = "Preview of the latest DOST-PAGASA video";
+          } else if (thumbnailAnchor && thumbnail) {
+            thumbnailAnchor.hidden = true;
+            thumbnailAnchor.setAttribute("aria-hidden", "true");
+            thumbnailAnchor.setAttribute("tabindex", "-1");
+            thumbnail.removeAttribute("src");
+            thumbnail.alt = "";
+          }
+          if (message) message.hidden = false;
+        }
+
+        function embedProxyUrl() {
+          const params = new URLSearchParams({
+            action: "youtube_embed",
+            channelId: APP_CONFIG.youtube.channelId,
+            _: String(Date.now())
+          });
+          return `${String(APP_CONFIG.api.youtubeProxy || "").trim()}?${params.toString()}`;
+        }
+
+        function loadVideo(videoId = "") {
+          const iframe = frame();
+          if (!iframe) return;
+
+          const requestId = ++embedRequest;
+          const validId = validVideoId(videoId) ? videoId : "";
+          const videoUrl = validId
+            ? `https://www.youtube.com/watch?v=${validId}`
+            : APP_CONFIG.youtube.videosUrl;
+          if (embedTimeout) clearTimeout(embedTimeout);
+          if (validId) {
+            showPlayerMessage("Loading the latest DOST-PAGASA video…", videoUrl, validId);
+            iframe.dataset.videoId = validId;
+          } else {
+            showPlayerMessage("Loading the latest DOST-PAGASA video…", videoUrl);
+            iframe.removeAttribute("data-video-id");
+          }
+          iframe.dataset.proxyFallback = validId ? "false" : "true";
+          iframe.src = "about:blank";
+          window.setTimeout(() => {
+            if (requestId === embedRequest) iframe.src = embedProxyUrl();
+          }, 50);
+
+          embedTimeout = window.setTimeout(() => {
+            if (requestId === embedRequest) {
+              showPlayerMessage(
+                "The video player did not load. You can still watch the update on YouTube.",
+                videoUrl,
+                validId
+              );
+            }
+          }, 12000);
+        }
+
+        frame()?.addEventListener("load", () => {
+          const iframe = frame();
+          if (
+            !iframe ||
+            iframe.src === "about:blank" ||
+            (!iframe.dataset.videoId && iframe.dataset.proxyFallback !== "true")
+          ) return;
+          if (embedTimeout) clearTimeout(embedTimeout);
+          const message = playerMessage();
+          if (message) message.hidden = true;
+        });
+
+        frame()?.addEventListener("error", () => {
+          const videoId = frame()?.dataset.videoId;
+          showPlayerMessage(
+            "The video player could not load. You can still watch the update on YouTube.",
+            videoId
+              ? `https://www.youtube.com/watch?v=${videoId}`
+              : APP_CONFIG.youtube.videosUrl,
+            videoId || ""
+          );
+        });
 
         function clearLegacyCache() {
           LEGACY_STORAGE.forEach((key) => DashboardCore.storage.remove(key));
@@ -2222,16 +4019,6 @@
           };
         }
 
-        function embedProxyUrl() {
-          const params = new URLSearchParams({
-            action: "youtube_embed",
-            channelId: APP_CONFIG.youtube.channelId,
-            _: String(Date.now())
-          });
-
-          return `${String(APP_CONFIG.api.youtubeProxy || "").trim()}?${params.toString()}`;
-        }
-
         function statusLabel(status) {
           switch (String(status || "").toLowerCase()) {
             case "live":
@@ -2290,25 +4077,7 @@
             badgeNode.textContent = statusLabel(item.status);
           }
 
-          /*
-           * The Apps Script now has a server-side HTML embed endpoint.
-           * It independently verifies public + embeddable status and then
-           * embeds the verified YouTube video. This avoids browser CORS,
-           * JSONP, redirect, and file:// restrictions entirely.
-           */
-          const nextSrc = embedProxyUrl();
-
-          /*
-           * Reset first so a previous private/unavailable iframe can never
-           * remain visually active while a new video is being loaded.
-           */
-          iframe.src = "about:blank";
           iframe.style.display = "block";
-
-          window.setTimeout(() => {
-            const current = frame();
-            if (current) current.src = nextSrc;
-          }, 50);
 
           if (status) {
             const published = item.publishedAt
@@ -2329,6 +4098,7 @@
 
         async function refresh() {
           clearLegacyCache();
+          loadVideo();
 
           const latest = await fetchAppsScriptJSONP();
 
@@ -2350,22 +4120,8 @@
             return cached;
           }
 
-          const iframe = frame();
           const status = stamp();
           const badgeNode = badge();
-
-          /*
-           * JSONP is only used for client-side metadata. If JSONP fails,
-           * the iframe can still use the server-verified HTML embed endpoint.
-           */
-          if (iframe) {
-            iframe.src = "about:blank";
-            iframe.style.display = "block";
-            window.setTimeout(() => {
-              const current = frame();
-              if (current) current.src = embedProxyUrl();
-            }, 50);
-          }
 
           if (titleNode()) {
             titleNode().textContent =
@@ -2374,7 +4130,7 @@
 
           if (status) {
             status.textContent =
-              "Server-verified DOST-PAGASA video";
+              "Loading server-verified DOST-PAGASA video";
           }
 
           if (badgeNode) {
@@ -2401,9 +4157,7 @@
         };
       })();
 
-      APP_CONFIG_READY
-        .then(() => YouTubeModule.init())
-        .catch(error => console.error("Dashboard configuration unavailable:", error));
+      YouTubeModule.init();
     </script>
 
     <!-- PAGASA Weather Maps -->
@@ -2446,6 +4200,41 @@
 
       </div>
     </div>
+
+    <section class="card border-0 shadow-sm mb-4 map-section" aria-labelledby="map-section-title">
+      <div class="card-header d-flex align-items-center justify-content-between gap-2">
+        <div class="min-w-0">
+          <h2 id="map-section-title" class="h6 mb-1 fw-bold">Local weather map</h2>
+          <div class="small text-muted">Optional map layers for nearby conditions</div>
+        </div>
+        <button
+          class="btn btn-sm btn-outline-primary collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#map-collapse"
+          aria-expanded="false"
+          aria-controls="map-collapse">
+          <span id="map-toggle-label">Explore map</span>
+        </button>
+      </div>
+      <div class="collapse" id="map-collapse">
+        <div class="card-body">
+          <div class="map-shell">
+            <div id="map" class="rounded-3 overflow-hidden border" style="border-color:var(--border)">
+              <div id="map-tile-status" class="map-tile-status" role="status" aria-live="polite" hidden>
+                <div class="map-tile-status__icon">🗺️</div>
+                <div class="map-tile-status__text">
+                  <strong>Map tiles temporarily unavailable</strong>
+                  <span>Try switching the map layer or refresh the page.</span>
+                </div>
+                <button type="button" id="map-tile-retry" class="btn btn-sm btn-light">Retry</button>
+              </div>
+            </div>
+          </div>
+          <div class="small text-muted mt-2">Map: San Mateo, Rizal, Philippines</div>
+        </div>
+      </div>
+    </section>
 
   </main>
 
@@ -2565,9 +4354,13 @@ function renderRizalPill(n){
 
         <!-- Widget JS (no Jina API key) -->
         <script>
-        APP_CONFIG_READY.then(() => {
         (() => {
-          const REFRESH_MS = 60 * 60 * 1000;
+          const RF_REFRESH_MS = 60 * 60 * 1000;
+          const WL_NORMAL_REFRESH_MS = 15 * 60 * 1000;
+          const WL_HIGH_PRIORITY_REFRESH_MS = 5 * 60 * 1000;
+          let wlRefreshMs = WL_NORMAL_REFRESH_MS;
+          let wlRefreshTimer = null;
+          let wlFetchInProgress = false;
 
           const toNum = s => (s==null?NaN:Number(s));
           const toFix = v => (Number.isFinite(v) ? v.toFixed(2) : "—");
@@ -2637,8 +4430,8 @@ function pickSavedWithData(keys, validator){
           const WL_JSON_URL = APP_CONFIG.api.ffwwsProxy;
           const WL_KEYS = { latest:"ffwws_raw_text", prev:"ffwws_raw_text_prev", newest:"ffwws_raw_text_new" };
           const WL_TARGETS = [
-            { key:"sanmateo-1", label:"Banaba-Batasan Bridge" },
-            { key:"stonino",    label:"Sto Niño Bridge" }
+            { key:"sanmateo-1", label:"Banaba-Batasan Bridge", alert:18, alarm:19, critical:20 },
+            { key:"stonino",    label:"Sto Niño Bridge", alert:15, alarm:16, critical:17 }
           ];
           const wlUpdated = document.getElementById("wl-updated");
           const wlNote    = document.getElementById("wl-note");
@@ -2648,8 +4441,14 @@ function pickSavedWithData(keys, validator){
             const m = (text||"").match(nameRegex);
             if(!m) return null;
             const block = text.slice(m.index + m[0].length, m.index + m[0].length + 400);
-            const nums = (block.match(/[0-9]+(?:\.[0-9]+)?/g) || []).slice(0,4).map(Number);
-            if (nums.length === 4 && nums.every(Number.isFinite)) {
+            const nums = (block.match(/[0-9]+(?:\.[0-9]+)?/g) || []).slice(0,7).map(Number);
+            if (nums.length >= 7 && nums.every(Number.isFinite)) {
+              return {
+                station: labelText, wl: nums[0], m30: nums[1], m1h: nums[2], m2h: nums[3],
+                alert: nums[4], alarm: nums[5], critical: nums[6], key: canonicalKey
+              };
+            }
+            if (nums.length >= 4 && nums.every(Number.isFinite)) {
               return { station: labelText, wl: nums[0], alert: nums[1], alarm: nums[2], critical: nums[3], key: canonicalKey };
             }
             return null;
@@ -2660,19 +4459,47 @@ function pickSavedWithData(keys, validator){
             const rows = [];
             for (const line of txt.split("\n")){
               const s = line.trim(); if(!s || /^station\b/i.test(s)) continue;
-              const p = s.search(/[0-9]/); if (p<=0) continue;
-              const name = s.slice(0,p).trim()
+              const separator = s.indexOf("|");
+              const p = s.search(/[0-9]/);
+              const namePart = separator >= 0 ? s.slice(0, separator) : s.slice(0, p);
+              const valuePart = separator >= 0 ? s.slice(separator + 1) : s.slice(p);
+              if (!namePart || p <= 0) continue;
+              const name = namePart.trim()
                 .replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\s*-\s*/g,"-").replace(/^\|+\s*|\s*\|+$/g,"");
-              const nums = (s.slice(p).match(/[0-9]+(?:\.[0-9]+)?/g)||[]).slice(0,4).map(toNum);
+              const nums = (valuePart.match(/[0-9]+(?:\.[0-9]+)?/g)||[]).slice(0,7).map(toNum);
               if (!name || nums.length<4 || nums.some(n=>!Number.isFinite(n))) continue;
-              rows.push({ station:name, wl:nums[0], alert:nums[1], alarm:nums[2], critical:nums[3], key:normKey(name) });
+              const m30Match = valuePart.match(/\b(?:m30|30\s*min(?:utes?)?)\s*[:=]\s*([0-9]+(?:\.[0-9]+)?)/i);
+              if (nums.length >= 7) {
+                rows.push({
+                  station:name, wl:nums[0], m30:nums[1], m1h:nums[2], m2h:nums[3], alert:nums[4], alarm:nums[5],
+                  critical:nums[6], key:normKey(name)
+                });
+              } else {
+                rows.push({
+                  station:name, wl:nums[0], m30:m30Match ? toNum(m30Match[1]) : NaN,
+                  alert:nums[1], alarm:nums[2], critical:nums[3], key:normKey(name)
+                });
+              }
+            }
+            if (!rows.length){
+              const rxSeven=/>([^<]+?)<\/(?:td|th)>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>/gi;
+              let m;
+              while((m=rxSeven.exec(txt))!==null){
+                const name=m[1].trim().replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\s*-\s*/g,"-");
+                if(/^station\b/i.test(name)) continue;
+                const nums=m.slice(2,9).map(toNum);
+                rows.push({
+                  station:name, wl:nums[0], m30:nums[1], m1h:nums[2], m2h:nums[3], alert:nums[4], alarm:nums[5],
+                  critical:nums[6], key:normKey(name)
+                });
+              }
             }
             if (!rows.length){
               const rx=/>([^<]+?)<\/(?:td|th)>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>\s*<(?:td)[^>]*>\s*([0-9.]+)\s*<\/td>/gi;
               let m; while((m=rx.exec(txt))!==null){
                 const name=m[1].trim().replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\s*-\s*/g,"-");
                 if(/^station\b/i.test(name)) continue;
-                rows.push({ station:name, wl:toNum(m[2]), alert:toNum(m[3]), alarm:toNum(m[4]), critical:toNum(m[5]), key:normKey(name) });
+                rows.push({ station:name, wl:toNum(m[2]), m30:NaN, m1h:NaN, m2h:NaN, alert:toNum(m[3]), alarm:toNum(m[4]), critical:toNum(m[5]), key:normKey(name) });
               }
             }
             const byKey = Object.fromEntries(rows.map(r => [r.key,r]));
@@ -2690,13 +4517,34 @@ function pickSavedWithData(keys, validator){
           const wl_getValid = raw => wl_extractAll(raw||"").length>0;
 
           function wl_render(raw,msg){
-            wlNote.textContent = msg||"";
+            const parsedRows = wl_extractAll(raw||"").map(row => {
+              const target = WL_TARGETS.find(item => item.key === row.key);
+              return target
+                ? { ...row, alert:target.alert, alarm:target.alarm, critical:target.critical }
+                : row;
+            });
+            const highPriorityRows = parsedRows.filter(row =>
+              row.wl >= row.alert ||
+              row.wl >= row.alarm ||
+              row.wl >= row.critical ||
+              (Number.isFinite(row.m30) && row.wl - row.m30 > 0.30)
+            );
+            const alarmRows = parsedRows.filter(row => row.wl >= row.alarm);
+            const criticalRows = parsedRows.filter(row => row.wl >= row.critical);
+            const highPriority = highPriorityRows.length > 0;
+            wlRefreshMs = highPriority ? WL_HIGH_PRIORITY_REFRESH_MS : WL_NORMAL_REFRESH_MS;
+            window.setDashboardRefreshMode?.(highPriority);
+
+            const priorityNote = highPriority
+              ? `High-priority monitoring (${criticalRows.length ? "Critical" : alarmRows.length ? "Alarm" : highPriorityRows.some(row => row.wl >= row.alert) ? "Alert threshold" : "rise >0.30 m in 30 min"}); checking every 5 minutes.`
+              : "Normal monitoring; checking every 15 minutes.";
+            wlNote.textContent = [msg, priorityNote].filter(Boolean).join(" ");
             if (!raw){
               wlBody.innerHTML = `<tr><td colspan="5" class="muted">No saved raw text yet.</td></tr>`;
-              wlUpdated.textContent = "Source: FFWWS";
+              wlUpdated.textContent = "Source time unavailable • Source: FFWWS";
               return;
             }
-            const byKey = Object.fromEntries(wl_extractAll(raw).map(r=>[r.key,r]));
+            const byKey = Object.fromEntries(parsedRows.map(r=>[r.key,r]));
             const out=[];
             for (const t of WL_TARGETS){
               const r=byKey[t.key]; if(!r) continue;
@@ -2705,11 +4553,11 @@ function pickSavedWithData(keys, validator){
               else if (r.wl>=r.alarm){ wlClass="wl-alarm"; rowClass="row-alarm"; }
               else if (r.wl>=r.alert){ wlClass="wl-alert"; rowClass="row-alert"; }
               out.push(`<tr class="${rowClass}">
-              <td data-label="Station"            class="${wlClass}">${t.label}</td>
-              <td data-label="WL [EL.m]"          class="num ${wlClass}">${toFix(r.wl)}</td>
-              <td data-label="Alert [EL.m]"       class="num wl-alert">${toFix(r.alert)}</td>
-              <td data-label="Alarm [EL.m]"       class="num wl-alarm">${toFix(r.alarm)}</td>
-              <td data-label="Critical [EL.m]"    class="num wl-critical">${toFix(r.critical)}</td>
+              <td data-label="Station"             class="${wlClass}">${t.label}</td>
+              <td data-label="WL [EL.m]"            class="num ${wlClass}">${toFix(r.wl)}</td>
+              <td data-label="Alert [EL.m]"        class="num wl-alert">${toFix(t.alert)}</td>
+              <td data-label="Alarm [EL.m]"        class="num wl-alarm">${toFix(t.alarm)}</td>
+              <td data-label="Critical [EL.m]"     class="num wl-critical">${toFix(t.critical)}</td>
             </tr>`);
             }
 
@@ -2717,13 +4565,51 @@ function pickSavedWithData(keys, validator){
               `<tr><td colspan="5" class="muted">Banaba-Batasan Bridge / Sto Niño Bridge not found.</td></tr>`;
               applyMobileLabels();
             const time = parseHeaderTime(raw);
-            wlUpdated.textContent = `${time ? `Time: ${time} • ` : ""}Source: FFWWS`;
+            wlUpdated.textContent = `${time ? `Source data time: ${time} • ` : "Source data time unavailable • "}Source: FFWWS`;
           }
 
-          function buildWLRawFromJSON(list = []) {
+          function formatSourceTimestamp(value) {
+            if (value == null || value === "") return "";
+            if (typeof value === "string") {
+              const localSourceTime = value.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+              if (localSourceTime) return `${localSourceTime[1]}-${localSourceTime[2]}-${localSourceTime[3]} ${localSourceTime[4]}:${localSourceTime[5]}`;
+            }
+            const timestamp = typeof value === "number" && value < 1e12 ? value * 1000 : value;
+            const date = new Date(timestamp);
+            if (Number.isNaN(date.getTime())) return "";
+            const parts = new Intl.DateTimeFormat("en-CA", {
+              timeZone: "Asia/Manila",
+              year: "numeric", month: "2-digit", day: "2-digit",
+              hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+            }).formatToParts(date);
+            const part = type => parts.find(item => item.type === type)?.value || "";
+            return `${part("year")}-${part("month")}-${part("day")} ${part("hour")}:${part("minute")}`;
+          }
+
+          function getWaterLevelSourceTime(data) {
+            const timestampKeys = [
+              "sourceTimestamp", "sourceTime", "observedAt", "observationTime",
+              "observationTimestamp", "dataTimestamp", "dataTime",
+              "waterLevelTimestamp", "waterLevelTime", "timestamp"
+            ];
+            const candidates = [data, data?.data, data?.result, data?.metadata, data?.meta];
+            for (const candidate of candidates) {
+              if (!candidate || typeof candidate !== "object") continue;
+              for (const key of timestampKeys) {
+                const formatted = formatSourceTimestamp(candidate[key]);
+                if (formatted) return formatted;
+              }
+            }
+            return "";
+          }
+
+          function buildWLRawFromJSON(list = [], sourceTime = "") {
             return [
+              ...(sourceTime ? [`Time: ${sourceTime}`] : []),
               "Station | WL | Alert | Alarm | Critical",
-              ...list.map(r => `${r.station} | ${r.wl} | ${r.alert} | ${r.alarm} | ${r.critical}`)
+              ...list.map(r =>
+                `${r.station} | ${r.wl} | ${Number.isFinite(r.m30) ? r.m30 : ""} | ${Number.isFinite(r.m1h) ? r.m1h : ""} | ${Number.isFinite(r.m2h) ? r.m2h : ""} | ${r.alert} | ${r.alarm} | ${r.critical}`
+              )
             ].join("\n");
           }
 
@@ -2751,6 +4637,9 @@ function pickSavedWithData(keys, validator){
             const normalized = list.map(r => ({
               station: r.station ?? r.name ?? r.stationName ?? "",
               wl: Number(r.wl ?? r.waterLevel ?? r.current),
+              m30: Number(r.m30 ?? r.minus30min ?? r.waterLevel30minAgo ?? r.current30minAgo ?? r.current_m30 ?? r.wl30min ?? r.thirtyMinutesAgo),
+              m1h: Number(r.m1h ?? r.minus1hr ?? r.waterLevel1hrAgo ?? r.current1hrAgo ?? r.current_m1h ?? r.wl1hr ?? r.oneHourAgo),
+              m2h: Number(r.m2h ?? r.minus2hr ?? r.waterLevel2hrAgo ?? r.current2hrAgo ?? r.current_m2h ?? r.wl2hr ?? r.twoHoursAgo),
               alert: Number(r.alert),
               alarm: Number(r.alarm),
               critical: Number(r.critical)
@@ -2762,47 +4651,59 @@ function pickSavedWithData(keys, validator){
               Number.isFinite(r.critical)
             );
 
-            const raw = buildWLRawFromJSON(normalized);
+            const raw = buildWLRawFromJSON(normalized, getWaterLevelSourceTime(data));
             if (!wl_getValid(raw)) throw new Error("No target San Mateo stations in Apps Script response");
             return raw;
           }
 
           async function wl_fetchSave(){
-            let raw = "";
-
-            // 1. Try PAGASA/Jina.
+            if (wlFetchInProgress) return;
+            wlFetchInProgress = true;
             try {
-              raw = await fetchViaJina(WL_CANDS);
-              if (wl_getValid(raw) && !isNoData(raw)) {
+              let raw = "";
+
+              // 1. Try PAGASA/Jina.
+              try {
+                raw = await fetchViaJina(WL_CANDS);
+                if (wl_getValid(raw) && !isNoData(raw)) {
+                  localStorage.setItem(WL_KEYS.newest, raw);
+                  const old = localStorage.getItem(WL_KEYS.latest) || "";
+                  if (old) localStorage.setItem(WL_KEYS.prev, old);
+                  localStorage.setItem(WL_KEYS.latest, raw);
+                  wl_render(raw, "");
+                  window.dispatchEvent(new CustomEvent("dashboard:waterlevel-updated"));
+                  return;
+                }
+              } catch (_) {}
+
+              // 2. PAGASA's map page is often only a shell to text proxies.
+              // Use the existing structured Apps Script source as the live fallback.
+              try {
+                raw = await getWLFromAppsScript();
                 localStorage.setItem(WL_KEYS.newest, raw);
                 const old = localStorage.getItem(WL_KEYS.latest) || "";
                 if (old) localStorage.setItem(WL_KEYS.prev, old);
                 localStorage.setItem(WL_KEYS.latest, raw);
-                wl_render(raw, "");
+                wl_render(raw, "Live data via FFWWS service.");
                 window.dispatchEvent(new CustomEvent("dashboard:waterlevel-updated"));
                 return;
-              }
-            } catch (_) {}
+              } catch (_) {}
 
-            // 2. PAGASA's map page is often only a shell to text proxies.
-            // Use the existing structured Apps Script source as the live fallback.
-            try {
-              raw = await getWLFromAppsScript();
-              localStorage.setItem(WL_KEYS.newest, raw);
-              const old = localStorage.getItem(WL_KEYS.latest) || "";
-              if (old) localStorage.setItem(WL_KEYS.prev, old);
-              localStorage.setItem(WL_KEYS.latest, raw);
-              wl_render(raw, "Live data via FFWWS service.");
-              window.dispatchEvent(new CustomEvent("dashboard:waterlevel-updated"));
-              return;
-            } catch (_) {}
+              // 3. Last-known-good cache.
+              const pick = pickSavedWithData(WL_KEYS, wl_getValid);
+              wl_render(
+                pick.raw,
+                pick.raw ? "Live fetch unavailable; showing last saved values." : "No water-level data available."
+              );
+            } finally {
+              wlFetchInProgress = false;
+              scheduleWaterLevelFetch();
+            }
+          }
 
-            // 3. Last-known-good cache.
-            const pick = pickSavedWithData(WL_KEYS, wl_getValid);
-            wl_render(
-              pick.raw,
-              pick.raw ? "Live fetch unavailable; showing last saved values." : "No water-level data available."
-            );
+          function scheduleWaterLevelFetch() {
+            window.clearTimeout(wlRefreshTimer);
+            wlRefreshTimer = window.setTimeout(wl_fetchSave, wlRefreshMs);
           }
 
 
@@ -2951,7 +4852,24 @@ ensureResponsiveTable('rf-tbody');   // keep if rainfall stays
 
 
           // Boot
-function bootWaterLevelWidgets() {
+document.addEventListener("DOMContentLoaded", () => {
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  const updateThemeControl = () => {
+    const isDark = document.documentElement.dataset.theme === "dark";
+    themeToggle.textContent = isDark ? "☀️ Clear mode" : "🌙 Dark mode";
+    themeToggle.setAttribute("aria-pressed", String(isDark));
+    themeToggle.title = `Switch to ${isDark ? "clear" : "dark"} mode`;
+    if (themeColor) themeColor.content = isDark ? "#0b1220" : "#0d6efd";
+  };
+  updateThemeControl();
+  themeToggle.addEventListener("click", () => {
+    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = nextTheme;
+    localStorage.setItem("weather-theme", nextTheme);
+    updateThemeControl();
+  });
+
   // WATER LEVEL init
   const wlPick = pickSavedWithData(WL_KEYS, wl_getValid);
   if (wlPick.raw) {
@@ -2971,18 +4889,10 @@ function bootWaterLevelWidgets() {
   // Start live fetch + timers
   wl_fetchSave();
   rf_fetchSave();
-  setInterval(wl_fetchSave, REFRESH_MS);
-  setInterval(rf_fetchSave, REFRESH_MS);
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", bootWaterLevelWidgets, { once: true });
-} else {
-  bootWaterLevelWidgets();
-}
+  setInterval(rf_fetchSave, RF_REFRESH_MS);
+});
 
         })();
-        }).catch(error => console.error("Water-level configuration unavailable:", error));
         </script>
 
 
@@ -3236,11 +5146,7 @@ function attachPlainPinchZoom(container, img){
       });
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      APP_CONFIG_READY
-        .then(initializeDashboardLinks)
-        .catch(error => console.error("Dashboard links unavailable:", error));
-    }, { once: true });
+    document.addEventListener("DOMContentLoaded", initializeDashboardLinks, { once: true });
   </script>
 
   <!-- Main JS -->
@@ -3433,7 +5339,6 @@ function attachPlainPinchZoom(container, img){
     }
 
     async function fetchPagasaSynopsisFromProxy(force = false) {
-      await APP_CONFIG_READY;
       const endpoint = String(APP_CONFIG.api.pagasaSynopsisProxy || "").trim();
       if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/i.test(endpoint)) {
         throw new Error("PAGASA Synopsis proxy is not configured.");
@@ -3654,12 +5559,12 @@ function attachPlainPinchZoom(container, img){
 
       return `
         <tr>
-          <td>${day}, ${date}</td>
-          <td>${day}</td>
-          <td>${hour}</td>
-          <td class="text-end">${mmLabel(rainMM)}</td>
-          <td class="text-end"><span class="badge ${probBadgeClass(pop)}">${pop}%</span></td>
-          <td>${inten.label === "—" ? "—" : `<span class="badge badge-intensity ${inten.cls}">${inten.label}</span>`}</td>
+          <td data-label="Date">${day}, ${date}</td>
+          <td data-label="Day">${day}</td>
+          <td data-label="Hour">${hour}</td>
+          <td data-label="Rain (mm)" class="text-end">${mmLabel(rainMM)}</td>
+          <td data-label="Probability (%)" class="text-end"><span class="badge ${probBadgeClass(pop)}">${pop}%</span></td>
+          <td data-label="Intensity">${inten.label === "—" ? "—" : `<span class="badge badge-intensity ${inten.cls}">${inten.label}</span>`}</td>
         </tr>`;
     }).join("");
 
@@ -3674,10 +5579,10 @@ function attachPlainPinchZoom(container, img){
   <!-- App scripts -->
   <script>
     /* ======= CONFIG ======= */
-    let OWM_KEY;
-    let LAT;
-    let LON;
-    let ENDPOINT;
+    const OWM_KEY  = APP_CONFIG.api.openWeatherKey;
+    const LAT      = APP_CONFIG.location.lat;
+    const LON      = APP_CONFIG.location.lon;
+    const ENDPOINT = APP_CONFIG.api.endpoint;
     const TOKEN    = ""; // optional shared secret
 
     /* ---------- Helpers ---------- */
@@ -3830,12 +5735,8 @@ map.on('popupopen', (e) => {
   });
 });
 
-// If your map lives in a collapsible/tab, ensure correct sizing:
-setTimeout(() => map.invalidateSize(), 0);
-
-
   // base layers
-  baseOSM = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"});
+  baseOSM = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles © Esri — Esri, DeLorme, NAVTEQ"});
   baseSAT = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles © Esri"}).addTo(map);
 
   // logo control (unchanged)
@@ -3857,6 +5758,38 @@ setTimeout(() => map.invalidateSize(), 0);
     pressure:      L.tileLayer(`https://tile.openweathermap.org/map/pressure_new/{z}/{x}/{y}.png?appid=${OWM_KEY}`,       {opacity:alpha})
   };
 
+  // Graceful map-tile error handling. The normal map has no blocking panel.
+  const tileStatus = document.getElementById('map-tile-status');
+  const tileRetry = document.getElementById('map-tile-retry');
+  let tileErrorTimer = null;
+
+  function showMapTileStatus(){
+    if (!tileStatus) return;
+    tileStatus.hidden = false;
+  }
+  function hideMapTileStatus(){
+    if (!tileStatus) return;
+    tileStatus.hidden = true;
+  }
+  function watchBaseLayer(layer){
+    layer.on('tileerror', () => {
+      clearTimeout(tileErrorTimer);
+      tileErrorTimer = setTimeout(showMapTileStatus, 1200);
+    });
+    layer.on('tileload', hideMapTileStatus);
+  }
+  watchBaseLayer(baseOSM);
+  watchBaseLayer(baseSAT);
+
+  tileRetry?.addEventListener('click', () => {
+    hideMapTileStatus();
+    const activeBase = _activeWxType === 'sat' ? baseSAT : baseOSM;
+    try {
+      activeBase.redraw();
+      map.invalidateSize();
+    } catch (_) {}
+  });
+
   // Weather Maps control
   const WxMenu = L.Control.extend({
     options:{position:'topleft'},
@@ -3874,6 +5807,25 @@ setTimeout(() => map.invalidateSize(), 0);
         </ul>`;
       const list = el.querySelector('#wxList');
 
+      // On phones, use a compact toggle so the map remains visible.
+      if (window.matchMedia('(max-width: 576px)').matches) {
+        const title = el.querySelector('.wx-title');
+        if (title) {
+          title.setAttribute('role','button');
+          title.setAttribute('tabindex','0');
+          title.innerHTML = 'WEATHER MAPS <span style="float:right">⌄</span>';
+          const toggle = () => {
+            el.classList.toggle('is-collapsed');
+            title.querySelector('span').textContent = el.classList.contains('is-collapsed') ? '⌃' : '⌄';
+          };
+          title.addEventListener('click', toggle);
+          title.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+          });
+          el.classList.add('is-collapsed');
+        }
+      }
+
       function setActive(type){
         _activeWxType = type;
 
@@ -3890,6 +5842,14 @@ setTimeout(() => map.invalidateSize(), 0);
 
         // refresh popup per layer rules
         refreshMarkerPopup();
+
+        // Collapse after selection on phones so the map is immediately visible.
+        if (window.matchMedia('(max-width: 576px)').matches) {
+          el.classList.add('is-collapsed');
+          const title = el.querySelector('.wx-title');
+          const arrow = title?.querySelector('span');
+          if (arrow) arrow.textContent = '⌃';
+        }
       }
 
       list.addEventListener('click', e=>{
@@ -3912,6 +5872,20 @@ setTimeout(() => map.invalidateSize(), 0);
 
   return siteMarker;
 }
+
+const mapPanel = document.getElementById('map-collapse');
+const mapToggleLabel = document.getElementById('map-toggle-label');
+mapPanel?.addEventListener('shown.bs.collapse', () => {
+  if (mapToggleLabel) mapToggleLabel.textContent = 'Hide map';
+  if (_latestOWM && !map) initMap();
+  if (map) {
+    if (siteMarker && _latestOWM) updateSanMateoPopup(siteMarker, _latestOWM);
+    requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+  }
+});
+mapPanel?.addEventListener('hidden.bs.collapse', () => {
+  if (mapToggleLabel) mapToggleLabel.textContent = 'Explore map';
+});
 
 // small icons for the popup row
 function svgDrop(){
@@ -4000,6 +5974,7 @@ function updateSanMateoPopup(marker, data){
       }
 
       const a = analyzeWeather(data);
+
       if (a.rainLevel === 'sev')       chips.push({ lvl:'sev',  text:'Heavy rain',     emoji:'🌧️' });
       else if (a.rainLevel === 'warn') chips.push({ lvl:'warn', text:'Rain likely',    emoji:'🌦️' });
       if (a.hasThunder)                chips.push({ lvl:'warn', text:'Thunderstorms',  emoji:'⛈️' });
@@ -4824,19 +6799,19 @@ function updateSanMateoPopup(marker, data){
 
         return `
           <tr>
-            <td>${date}</td>
-            <td class="text-start">${day.summary}</td>
-            <td class="text-center"><img src="${icon}" alt="${day.weather?.[0]?.description||''}" width="28" height="28"></td>
+            <td data-label="Date">${date}</td>
+            <td data-label="Summary" class="text-start forecast-summary-cell">${day.summary}</td>
+            <td data-label="Icon" class="text-center forecast-icon-cell"><img src="${icon}" alt="${day.weather?.[0]?.description||''}" width="28" height="28"></td>
 
-            <td class="cell-num">${day.temp.min.toFixed(1)} / ${day.temp.max.toFixed(1)}</td>
-            <td class="cell-num">${day.feels_like.day.toFixed(1)} / ${day.feels_like.night.toFixed(1)}</td>
-            <td class="cell-num">${day.humidity}%</td>
-            <td class="cell-num">${day.pressure} hPa</td>
-            <td class="cell-num">${day.clouds}%</td>
-            <td class="cell-num">${(day.wind_speed||0).toFixed(1)} / ${day.wind_gust ? day.wind_gust.toFixed(1) : '–'}</td>
+            <td data-label="Min/Max (°C)" class="cell-num">${day.temp.min.toFixed(1)} / ${day.temp.max.toFixed(1)}</td>
+            <td data-label="Feels D/N (°C)" class="cell-num">${day.feels_like.day.toFixed(1)} / ${day.feels_like.night.toFixed(1)}</td>
+            <td data-label="Humidity" class="cell-num">${day.humidity}%</td>
+            <td data-label="Pressure" class="cell-num">${day.pressure} hPa</td>
+            <td data-label="Clouds" class="cell-num">${day.clouds}%</td>
+            <td data-label="Wind m/s" class="cell-num">${(day.wind_speed||0).toFixed(1)} / ${day.wind_gust ? day.wind_gust.toFixed(1) : '–'}</td>
 
             <!-- POP % -->
-            <td class="cell-num">
+            <td data-label="POP %" class="cell-num">
               <div class="chip-stack" title="Probability of precipitation: ${pop}%">
                 <span class="badge-chip ${chipClass(pop,'pop')}">${pop}%</span>
                 <div class="meter" role="progressbar" aria-valuenow="${pop}" aria-valuemin="0" aria-valuemax="100">
@@ -4846,7 +6821,7 @@ function updateSanMateoPopup(marker, data){
             </td>
 
             <!-- Rain mm -->
-            <td class="cell-num">
+            <td data-label="Rain mm" class="cell-num">
               <div class="chip-stack" title="Rain: ${rain.toFixed(1)} mm (scaled to ${rainCap} mm)">
                 <span>${rain.toFixed(1)}</span>
                 <div class="meter meter--rain" role="progressbar" aria-valuenow="${rain}" aria-valuemin="0" aria-valuemax="${rainCap}">
@@ -4856,7 +6831,7 @@ function updateSanMateoPopup(marker, data){
             </td>
 
             <!-- UVI -->
-            <td class="cell-num">
+            <td data-label="UVI" class="cell-num">
               <span class="badge-chip ${uviCls}" title="UVI: ${uvi}">${uvi}</span>
             </td>
           </tr>`;
@@ -4874,19 +6849,8 @@ function updateSanMateoPopup(marker, data){
         _latestOWM = data;
         setUpdated((data.current?.dt || Date.now())*1000);
 
-        const marker = initMap();
-        const icon = data.current?.weather?.[0]?.icon;
-        const temp = Math.round(data.current?.temp ?? 0);
-        const desc = data.current?.weather?.[0]?.description || "";
-        marker.bindPopup(`
-          <div class="text-center">
-            <strong>San Mateo</strong><br>
-            <span>${temp}°C – ${desc}</span><br>
-            <img src="${iconUrl(icon)}" alt="" height="40">
-          </div>
-        `).openPopup();
-
-        updateSanMateoPopup(marker, data);
+        if (!map && mapPanel?.classList.contains('show')) initMap();
+        if (siteMarker) updateSanMateoPopup(siteMarker, data);
         renderCurrent(data);
         renderHourlyChart(data.hourly || []);
         renderDailyTable(data.daily || [], data.hourly || []);
@@ -4914,19 +6878,7 @@ function updateSanMateoPopup(marker, data){
         document.querySelector("main").prepend(alert);
       }
     }
-    APP_CONFIG_READY.then(config => {
-      OWM_KEY = config.api.openWeatherKey;
-      LAT = config.location.lat;
-      LON = config.location.lon;
-      ENDPOINT = config.api.endpoint;
-      return loadAll();
-    }).catch(error => {
-      console.error("Dashboard configuration unavailable:", error);
-      const alert = document.createElement("div");
-      alert.className = "alert alert-warning";
-      alert.textContent = "Dashboard settings could not be loaded. Check that constants.json is available beside index.html.";
-      document.querySelector("main")?.prepend(alert);
-    });
+    loadAll();
 
     /* ---------- Ask server-side AI for action suggestions ---------- */
     async function requestAIActions(){
@@ -5129,6 +7081,49 @@ function updateSanMateoPopup(marker, data){
 
 <script>
 (function () {
+  const NORMAL_REFRESH_MS = 15 * 60 * 1000;
+  const SEVERE_REFRESH_MS = 5 * 60 * 1000;
+  let highPriorityMonitoring = false;
+  let reloadTimer = null;
+  let reloadAt = Date.now() + NORMAL_REFRESH_MS;
+
+  function scheduleReload(delay) {
+    window.clearTimeout(reloadTimer);
+    reloadAt = Date.now() + delay;
+    reloadTimer = window.setTimeout(function () {
+      reloadTimer = null;
+      if (!document.hidden) window.location.reload();
+    }, delay);
+  }
+
+  window.setDashboardRefreshMode = function (isSevere) {
+    const nextMode = Boolean(isSevere);
+    if (nextMode === highPriorityMonitoring) return;
+
+    highPriorityMonitoring = nextMode;
+    scheduleReload(highPriorityMonitoring ? SEVERE_REFRESH_MS : NORMAL_REFRESH_MS);
+    console.info(
+      `Dashboard will reload every ${highPriorityMonitoring ? 5 : 15} minutes.`,
+      highPriorityMonitoring ? "High-priority water-level condition detected." : "Water levels are below high-priority thresholds."
+    );
+  };
+
+  scheduleReload(NORMAL_REFRESH_MS);
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) return;
+    const remaining = reloadAt - Date.now();
+    if (remaining <= 0) {
+      window.location.reload();
+    } else if (reloadTimer === null) {
+      scheduleReload(remaining);
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
   function makeResponsive(table) {
     if (!table) return;
     table.classList.add('rtable');
@@ -5165,6 +7160,56 @@ function updateSanMateoPopup(marker, data){
 
   // If your render functions replace the tbody HTML, call this again:
   window._refreshResponsiveTables = init;
+})();
+</script>
+
+<script>
+(function () {
+  const installButton = document.getElementById("install-app");
+  if (!installButton) return;
+
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
+  if (isStandalone) return;
+
+  const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  let installPrompt = null;
+
+  if (isAppleMobile) {
+    installButton.hidden = false;
+    installButton.addEventListener("click", function () {
+      window.alert('To install this app, tap the Share button in Safari, then choose "Add to Home Screen".');
+    });
+  }
+
+  window.addEventListener("beforeinstallprompt", function (event) {
+    event.preventDefault();
+    installPrompt = event;
+    installButton.hidden = false;
+  });
+
+  installButton.addEventListener("click", async function () {
+    if (!installPrompt) return;
+
+    installPrompt.prompt();
+    await installPrompt.userChoice;
+    installPrompt = null;
+    installButton.hidden = true;
+  });
+
+  window.addEventListener("appinstalled", function () {
+    installPrompt = null;
+    installButton.hidden = true;
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("./service-worker.js").catch(function (error) {
+        console.error("Service worker registration failed:", error);
+      });
+    });
+  }
 })();
 </script>
 
