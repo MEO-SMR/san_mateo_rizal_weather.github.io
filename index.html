@@ -605,14 +605,7 @@
           #smr-wlrf table{width:100%;border-collapse:collapse;border:1px solid var(--border);font-size:.95rem}
           #smr-wlrf th,#smr-wlrf td{padding:.56rem .6rem;border-top:1px solid var(--border)}
           #smr-wlrf thead th{background:var(--table-header);color:var(--table-head-text);border-bottom:2px solid var(--table-border);text-align:left}
-          #smr-wlrf .wl-history-table thead tr:first-child th{background:var(--table-header);color:var(--table-head-text);border-color:var(--table-border)}
-          #smr-wlrf .wl-history-table thead tr:nth-child(2) th{background:var(--table-header);color:var(--table-head-text);border-color:var(--table-border)}
-          #smr-wlrf .wl-history-table .wl-group-observed{color:var(--table-head-text)}
-          #smr-wlrf .wl-history-table .wl-group-warning{color:var(--table-head-text)}
-          #smr-wlrf .wl-history-table tbody td:not(.wl-alert):not(.wl-alarm):not(.wl-critical){color:var(--text);border-color:var(--border)}
           #smr-wlrf tbody tr:nth-child(even) td{background:rgba(255,255,255,.02)}
-          #smr-wlrf .wl-history-table tbody tr:nth-child(even) td{background:var(--table-even)}
-          #smr-wlrf .wl-history-table tbody tr:hover td{background:var(--table-hover)}
           #smr-wlrf .num{text-align:right;font-variant-numeric:tabular-nums}
           #smr-wlrf .rf-legend{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.85rem}
           #smr-wlrf .rf-legend-item{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .6rem;border:1px solid #334155;border-radius:999px;background:#182235;color:#e2e8f0;font-size:.78rem;font-weight:700}
@@ -631,13 +624,6 @@
           #smr-wlrf #rf-table .wl-alert{color:var(--alert)}
           #smr-wlrf #rf-table .wl-alarm{color:var(--alarm)}
           #smr-wlrf #rf-table .wl-critical{color:var(--critical)}
-          #smr-wlrf .wl-table-head{
-            display:grid;grid-template-columns:30% repeat(4,17.5%);
-            margin-top:.35rem;background:var(--table-header);border-bottom:2px solid var(--table-border);
-            color:var(--table-head-text);font-size:.88rem;font-weight:800
-          }
-          #smr-wlrf .wl-table-head span{padding:.72rem .85rem;text-align:right}
-          #smr-wlrf .wl-table-head span:first-child{text-align:left}
           #smr-wlrf .rf-table-groups{
             display:grid;grid-template-columns:24% 12% repeat(6,10.666%);
             grid-template-rows:auto auto;margin-top:.35rem;background:var(--table-header);
@@ -649,12 +635,6 @@
           #smr-wlrf .rf-table-groups__current{grid-column:2;grid-row:1;border-bottom:1px solid var(--table-border)}
           #smr-wlrf .rf-table-groups__accumulated{grid-column:3 / span 6;grid-row:1;border-bottom:1px solid var(--table-border)}
           #smr-wlrf .rf-table-groups__sub{grid-row:2}
-          #smr-wlrf .ffwws-accessible-head{
-            position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
-            overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important
-          }
-          #smr-wlrf .wl-history-table col.station{width:30%}
-          #smr-wlrf .wl-history-table col.threshold{width:17.5%}
           @media (min-width:768px){
             #smr-wlrf #rf-table{display:table;table-layout:fixed;min-width:700px}
             #smr-wlrf #rf-table thead{display:table-header-group}
@@ -1041,7 +1021,7 @@
   }
 
   /* === FFWWS TABLES === */
-  .rtable, #wl-tbody table, #rf-tbody table {
+  .rtable, #rf-tbody table {
     display: block;
     width: 100%;
     overflow-x: auto;
@@ -1161,50 +1141,6 @@
 .stack-table .wl-alert   { color:#b45309; }  /* amber text */
 .stack-table .wl-alarm   { color:#c2410c; }
 .stack-table .wl-critical{ color:#b91c1c; }
-
-/* === Water Level historical table: grouped two-row header === */
-.wl-history-table{
-  min-width: 820px;
-  table-layout: auto;
-}
-.wl-history-table thead tr:first-child th{
-  text-align:center;
-  background:#f8fafc;
-  color:#334155;
-  font-weight:800;
-  border-bottom:1px solid #dbe3ea;
-}
-.wl-history-table thead tr:nth-child(2) th{
-  text-align:center;
-  background:#fff;
-  font-weight:700;
-}
-.wl-history-table .wl-group-observed{ color:#334155; }
-.wl-history-table .wl-group-warning{ color:#475569; }
-.wl-history-table tbody td:first-child{
-  text-align:left;
-  color:#f97316;
-  font-weight:500;
-}
-.wl-history-table tbody td.num{
-  text-align:right;
-  font-variant-numeric:tabular-nums;
-}
-.wl-history-table tbody tr:nth-child(even) td{
-  background:#eef6fc;
-}
-.wl-history-table tbody tr:hover td{
-  background:#f4f8fb;
-}
-@media (max-width: 640px){
-  .wl-history-table{
-    min-width:820px;
-  }
-  #smr-wlrf .wl-history-table-wrap{
-    overflow-x:auto;
-  }
-}
-
 
 /* Optional: a subtle divider between station blocks on desktop */
 @media (min-width: 577px){
@@ -2781,14 +2717,9 @@ main > .card:first-child #actions-ai-note{
   }
   html[data-theme="light"] .leaflet-control-attribution a{color:#075985!important}
   #theme-toggle{white-space:nowrap}
-  #smr-wlrf .wl-history-table{width:100%;min-width:0!important;table-layout:fixed}
   #smr-wlrf #rf-table{width:100%;min-width:0!important;table-layout:fixed}
-  #smr-wlrf .wl-history-table th,
-  #smr-wlrf .wl-history-table td,
   #smr-wlrf #rf-table th,
   #smr-wlrf #rf-table td{padding:.72rem .85rem}
-  #smr-wlrf .wl-history-table tbody td:first-child{text-align:left}
-  #smr-wlrf .wl-history-table tbody td.num,
   #smr-wlrf #rf-table tbody td.num{text-align:right}
   #smr-wlrf .rf-legend-item{background:var(--surface-2);border-color:var(--border)}
   @media (min-width:576px){
@@ -2802,8 +2733,7 @@ main > .card:first-child #actions-ai-note{
   @media (max-width:575.98px){
     .forecast-column-header{display:none}
     #theme-toggle{font-size:.72rem;padding:.35rem .5rem}
-    #smr-wlrf .rf-table-groups,
-    #smr-wlrf .wl-table-head{display:none}
+    #smr-wlrf .rf-table-groups{display:none}
   }
   @media (max-width:575.98px){
     .statusbar{
@@ -2994,6 +2924,7 @@ main > .card:first-child #actions-ai-note{
   <div class="fw-semibold">San Mateo Water Level</div>
   <small class="text-muted">Source: FFWWS</small>
 </div>
+<div id="wl-card-source" class="small text-muted mb-2" aria-live="polite">Source data time unavailable.</div>
 
 <div class="wl-grid">
   <!-- San Mateo-1 / Banaba–Batasan -->
@@ -3205,45 +3136,6 @@ main > .card:first-child #actions-ai-note{
       <div class="tab-pane fade show active p-2" id="tab-smr" role="tabpanel" aria-labelledby="tab-smr-btn">
         <!-- Scope styles inside this tab to avoid clashes -->
         <div id="smr-wlrf">
-          <!-- WATER LEVEL -->
-          <section class="card mb-3 table-wrap">
-            <div class="hd">
-              <span>Water Level • Banaba-Batasan Bridge &amp; Sto Niño Bridge</span>
-              <small id="wl-updated" aria-live="polite">Source: FFWWS</small>
-            </div>
-            <div class="bd">
-              <div id="wl-note" class="muted mb-2"></div>
-              <div class="wl-table-head" aria-hidden="true">
-                <span>Station</span>
-                <span>WL [EL.m]</span>
-                <span>Alert [EL.m]</span>
-                <span>Alarm [EL.m]</span>
-                <span>Critical [EL.m]</span>
-              </div>
-              <table class="rtable stack-table wl-history-table" id="wl-table" aria-label="Selected FFWWS stations (Water Level)">
-                <colgroup>
-                  <col class="station">
-                  <col class="threshold">
-                  <col class="threshold">
-                  <col class="threshold">
-                  <col class="threshold">
-                </colgroup>
-                <thead class="ffwws-accessible-head">
-                  <tr>
-                    <th>Station</th>
-                    <th class="num">WL [EL.m]</th>
-                    <th class="num col-alert">Alert [EL.m]</th>
-                    <th class="num col-alarm">Alarm [EL.m]</th>
-                    <th class="num col-critical">Critical [EL.m]</th>
-                  </tr>
-                </thead>
-                <tbody id="wl-tbody">
-                  <tr><td colspan="5" class="muted">Loading…</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
           <!-- RAINFALL -->
           <section class="card table-wrap">
             <div class="hd">
@@ -4433,9 +4325,7 @@ function pickSavedWithData(keys, validator){
             { key:"sanmateo-1", label:"Banaba-Batasan Bridge", alert:18, alarm:19, critical:20 },
             { key:"stonino",    label:"Sto Niño Bridge", alert:15, alarm:16, critical:17 }
           ];
-          const wlUpdated = document.getElementById("wl-updated");
-          const wlNote    = document.getElementById("wl-note");
-          const wlBody    = document.getElementById("wl-tbody");
+          const wlCardSource = document.getElementById("wl-card-source");
 
           function wl_captureAfterName(text, nameRegex, canonicalKey, labelText){
             const m = (text||"").match(nameRegex);
@@ -4538,34 +4428,18 @@ function pickSavedWithData(keys, validator){
             const priorityNote = highPriority
               ? `High-priority monitoring (${criticalRows.length ? "Critical" : alarmRows.length ? "Alarm" : highPriorityRows.some(row => row.wl >= row.alert) ? "Alert threshold" : "rise >0.30 m in 30 min"}); checking every 5 minutes.`
               : "Normal monitoring; checking every 15 minutes.";
-            wlNote.textContent = [msg, priorityNote].filter(Boolean).join(" ");
-            if (!raw){
-              wlBody.innerHTML = `<tr><td colspan="5" class="muted">No saved raw text yet.</td></tr>`;
-              wlUpdated.textContent = "Source time unavailable • Source: FFWWS";
-              return;
-            }
-            const byKey = Object.fromEntries(parsedRows.map(r=>[r.key,r]));
-            const out=[];
-            for (const t of WL_TARGETS){
-              const r=byKey[t.key]; if(!r) continue;
-              let wlClass="", rowClass="";
-              if (r.wl>=r.critical){ wlClass="wl-critical"; rowClass="row-critical"; }
-              else if (r.wl>=r.alarm){ wlClass="wl-alarm"; rowClass="row-alarm"; }
-              else if (r.wl>=r.alert){ wlClass="wl-alert"; rowClass="row-alert"; }
-              out.push(`<tr class="${rowClass}">
-              <td data-label="Station"             class="${wlClass}">${t.label}</td>
-              <td data-label="WL [EL.m]"            class="num ${wlClass}">${toFix(r.wl)}</td>
-              <td data-label="Alert [EL.m]"        class="num wl-alert">${toFix(t.alert)}</td>
-              <td data-label="Alarm [EL.m]"        class="num wl-alarm">${toFix(t.alarm)}</td>
-              <td data-label="Critical [EL.m]"     class="num wl-critical">${toFix(t.critical)}</td>
-            </tr>`);
-            }
-
-            wlBody.innerHTML = out.length ? out.join("") :
-              `<tr><td colspan="5" class="muted">Banaba-Batasan Bridge / Sto Niño Bridge not found.</td></tr>`;
-              applyMobileLabels();
             const time = parseHeaderTime(raw);
-            wlUpdated.textContent = `${time ? `Source data time: ${time} • ` : "Source data time unavailable • "}Source: FFWWS`;
+            if (wlCardSource) {
+              wlCardSource.textContent = [
+                msg,
+                time ? `Source data time: ${time}` : "Source data time unavailable",
+                priorityNote
+              ].filter(Boolean).join(" • ");
+            }
+            window.waterLevelRows = parsedRows;
+            window.dispatchEvent(new CustomEvent("dashboard:waterlevel-updated", {
+              detail: { rows: parsedRows }
+            }));
           }
 
           function formatSourceTimestamp(value) {
@@ -4671,7 +4545,6 @@ function pickSavedWithData(keys, validator){
                   if (old) localStorage.setItem(WL_KEYS.prev, old);
                   localStorage.setItem(WL_KEYS.latest, raw);
                   wl_render(raw, "");
-                  window.dispatchEvent(new CustomEvent("dashboard:waterlevel-updated"));
                   return;
                 }
               } catch (_) {}
@@ -4685,7 +4558,6 @@ function pickSavedWithData(keys, validator){
                 if (old) localStorage.setItem(WL_KEYS.prev, old);
                 localStorage.setItem(WL_KEYS.latest, raw);
                 wl_render(raw, "Live data via FFWWS service.");
-                window.dispatchEvent(new CustomEvent("dashboard:waterlevel-updated"));
                 return;
               } catch (_) {}
 
@@ -4822,13 +4694,6 @@ function pickSavedWithData(keys, validator){
 
 /* Put this once, with your other helpers */
 function applyMobileLabels() {
-  // Water level headers (in column order)
-  const WL_HDR = ["Station","WL [EL.m]","Alert [EL.m]","Alarm [EL.m]","Critical [EL.m]"];
-  document.querySelectorAll('#wl-tbody tr').forEach(tr => {
-    tr.querySelectorAll('td').forEach((td, i) => td.setAttribute('data-label', WL_HDR[i] || ""));
-  });
-
-  // If you still render the rainfall table, keep these:
   const RF_HDR = ["Station","Current","30 min","1hr","3hr","6hr","12hr","24hr"];
   document.querySelectorAll('#rf-tbody tr').forEach(tr => {
     tr.querySelectorAll('td').forEach((td, i) => td.setAttribute('data-label', RF_HDR[i] || ""));
@@ -4847,8 +4712,7 @@ function ensureResponsiveTable(tbodyId){
     wrap.appendChild(table);
   }
 }
-ensureResponsiveTable('wl-tbody');   // call once on load
-ensureResponsiveTable('rf-tbody');   // keep if rainfall stays
+ensureResponsiveTable('rf-tbody');
 
 
           // Boot
@@ -6981,27 +6845,6 @@ function updateSanMateoPopup(marker, data){
     { card: "wl-card-sn",  match: /sto\.?\s*ni(?:n|ñ)o/i }
   ]);
 
-  const number = value => {
-    const n = Number(String(value ?? "").replace(/[^0-9.\-]/g, ""));
-    return Number.isFinite(n) ? n : NaN;
-  };
-
-  function readRows() {
-    return Array.from(document.querySelectorAll("#wl-tbody tr"))
-      .map(tr => {
-        const cells = Array.from(tr.querySelectorAll("td"));
-        if (cells.length < 5) return null;
-        return {
-          station: cells[0].textContent.trim(),
-          wl: number(cells[1].textContent),
-          alert: number(cells[2].textContent),
-          alarm: number(cells[3].textContent),
-          critical: number(cells[4].textContent)
-        };
-      })
-      .filter(row => row && Number.isFinite(row.wl));
-  }
-
   function severity(row) {
     if (!row) return "normal";
     if (Number.isFinite(row.critical) && row.wl >= row.critical) return "critical";
@@ -7022,7 +6865,7 @@ function updateSanMateoPopup(marker, data){
     const alarmEl = document.getElementById(`${target.card}-al`);
     const criticalEl = document.getElementById(`${target.card}-c`);
 
-    host.classList.remove("is-empty", "is-alert", "is-alarm", "is-critical");
+    host.classList.remove("is-empty", "is-normal", "is-alert", "is-alarm", "is-critical");
 
     if (!row) {
       host.classList.add("is-empty");
@@ -7054,8 +6897,8 @@ function updateSanMateoPopup(marker, data){
     }
   }
 
-  function refresh() {
-    const rows = readRows();
+  function refresh(rows = window.waterLevelRows || []) {
+    if (!Array.isArray(rows)) rows = [];
     for (const target of TARGETS) {
       const row = rows.find(item => target.match.test(item.station));
       updateCard(target, row);
@@ -7064,14 +6907,9 @@ function updateSanMateoPopup(marker, data){
 
   function init() {
     refresh();
-
-    const body = document.getElementById("wl-tbody");
-    if (body && "MutationObserver" in window) {
-      const observer = new MutationObserver(refresh);
-      observer.observe(body, { childList: true, subtree: true, characterData: true });
-    }
-
-    window.addEventListener("dashboard:waterlevel-updated", refresh);
+    window.addEventListener("dashboard:waterlevel-updated", event => {
+      refresh(event.detail?.rows);
+    });
   }
 
   window.WaterLevelCardsModule = { init, refresh };
@@ -7147,11 +6985,8 @@ function updateSanMateoPopup(marker, data){
     });
   }
 
-  // Find your existing tables using the known TBODY ids
   function init() {
-    const wlTable = document.getElementById('wl-tbody')?.closest('table');
     const rfTable = document.getElementById('rf-tbody')?.closest('table');
-    makeResponsive(wlTable);
     makeResponsive(rfTable);
   }
 
