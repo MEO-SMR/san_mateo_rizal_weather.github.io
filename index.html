@@ -1568,15 +1568,35 @@ main > .card:first-child .row.g-3 > [class*="col-"] > div{
 }
 .weather-card .wl-badges{
   flex-direction:row !important;
+  flex-wrap:wrap;
   gap:4px;
 }
 .weather-card .wl-badge{
-  width:24px;
+  width:auto;
   height:24px;
-  min-width:24px;
-  padding:0;
-  font-size:.65rem;
+  min-width:0;
+  padding:0 .45rem;
+  gap:.2rem;
+  font-size:.62rem;
+  white-space:nowrap;
 }
+.weather-card .wl-badge.is-active{
+  outline:2px solid currentColor;
+  outline-offset:1px;
+}
+.weather-card .wl-card-status{
+  margin-top:.3rem;
+  color:var(--muted,#64748b);
+  font-size:.68rem;
+  font-weight:700;
+}
+.weather-card .wl-card.is-alert .wl-card-status{color:#a16207}
+.weather-card .wl-card.is-alarm .wl-card-status{color:#c2410c}
+.weather-card .wl-card.is-critical .wl-card-status{color:#b91c1c}
+html[data-theme="dark"] .weather-card .wl-card.is-alert .wl-card-status{color:#facc15}
+html[data-theme="dark"] .weather-card .wl-card.is-alarm .wl-card-status{color:#fb923c}
+html[data-theme="dark"] .weather-card .wl-card.is-critical .wl-card-status{color:#f87171}
+html[data-theme="dark"] .weather-card .wl-card.is-normal .wl-card-status{color:#cbd5e1}
 
 /* ---------- Forecast tabs ---------- */
 .nav-tabs{
@@ -2921,43 +2941,41 @@ main > .card:first-child #actions-ai-note{
               <!-- FFWWS Water Level quick cards -->
 <hr class="my-3">
 <div class="d-flex align-items-center justify-content-between mb-1">
-  <div class="fw-semibold">San Mateo Water Level</div>
-  <small class="text-muted">Source: FFWWS</small>
+  <div class="fw-semibold">San Mateo river levels</div>
 </div>
-<div id="wl-card-source" class="small text-muted mb-2" aria-live="polite">Source data time unavailable.</div>
+<div class="small text-muted mb-1">FFWWS · Water level in metres (m)</div>
+<div id="wl-card-source" class="small text-muted mb-2" aria-live="polite">Update time unavailable · Loading readings</div>
 
 <div class="wl-grid">
-  <!-- San Mateo-1 / Banaba–Batasan -->
   <div class="wl-card" id="wl-card-sm1" aria-live="polite">
-    <div class="wl-title">Batasan</div>
+    <div class="wl-title">Banaba–Batasan Bridge</div>
     <div class="wl-body">
       <div>
         <div class="wl-value" id="wl-card-sm1-value">—</div>
-         <!--<div class="wl-site"  id="wl-card-sm1-station">Banaba–Batasan Bridge</div>-->
+        <div class="wl-card-status" id="wl-card-sm1-level">Loading reading</div>
       </div>
       <div class="wl-right">
         <div class="wl-badges">
-          <span class="wl-badge wl-badge--y" id="wl-card-sm1-a">18</span>
-          <span class="wl-badge wl-badge--o" id="wl-card-sm1-al">19</span>
-          <span class="wl-badge wl-badge--r" id="wl-card-sm1-c">20</span>
+          <span class="wl-badge wl-badge--y"><span>Alert</span><span id="wl-card-sm1-a">18</span><span>m</span></span>
+          <span class="wl-badge wl-badge--o"><span>Alarm</span><span id="wl-card-sm1-al">19</span><span>m</span></span>
+          <span class="wl-badge wl-badge--r"><span>Critical</span><span id="wl-card-sm1-c">20</span><span>m</span></span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Sto Niño Bridge -->
   <div class="wl-card" id="wl-card-sn" aria-live="polite">
-    <div class="wl-title">Sto Niño</div>
+    <div class="wl-title">Sto. Niño Bridge</div>
     <div class="wl-body">
       <div>
         <div class="wl-value" id="wl-card-sn-value">—</div>
-        <!--<div class="wl-site"  id="wl-card-sn-station">Sto Niño Bridge</div>-->
+        <div class="wl-card-status" id="wl-card-sn-level">Loading reading</div>
       </div>
       <div class="wl-right">
         <div class="wl-badges">
-          <span class="wl-badge wl-badge--y" id="wl-card-sn-a">15</span>
-          <span class="wl-badge wl-badge--o" id="wl-card-sn-al">16</span>
-          <span class="wl-badge wl-badge--r" id="wl-card-sn-c">17</span>
+          <span class="wl-badge wl-badge--y"><span>Alert</span><span id="wl-card-sn-a">15</span><span>m</span></span>
+          <span class="wl-badge wl-badge--o"><span>Alarm</span><span id="wl-card-sn-al">16</span><span>m</span></span>
+          <span class="wl-badge wl-badge--r"><span>Critical</span><span id="wl-card-sn-c">17</span><span>m</span></span>
         </div>
       </div>
     </div>
@@ -4261,6 +4279,17 @@ function renderRizalPill(n){
             .toLowerCase().replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\./g,"")
             .replace(/\s*-\s*/g,"-").replace(/\s+/g,"").replace(/[^\w-]+/g,"");
           const parseHeaderTime = t => ((t||"").match(/Time\s*:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[0-9]{2}:[0-9]{2})/)||[])[1]||"";
+          const formatWaterLevelTime = value => {
+            const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
+            if (!match) return "Update time unavailable";
+            const [, year, month, day, hour, minute] = match;
+            const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:00Z`);
+            const formatted = new Intl.DateTimeFormat("en-PH", {
+              timeZone: "UTC", month: "short", day: "numeric",
+              hour: "numeric", minute: "2-digit"
+            }).format(date);
+            return `Updated ${formatted}`;
+          };
           const chooseBest = (latest, prev, valid) => {
             if (valid(latest||"")) return {raw:latest, from:"latest"};
             if (valid(prev||""))   return {raw:prev,   from:"previous"};
@@ -4425,15 +4454,24 @@ function pickSavedWithData(keys, validator){
             wlRefreshMs = highPriority ? WL_HIGH_PRIORITY_REFRESH_MS : WL_NORMAL_REFRESH_MS;
             window.setDashboardRefreshMode?.(highPriority);
 
-            const priorityNote = highPriority
-              ? `High-priority monitoring (${criticalRows.length ? "Critical" : alarmRows.length ? "Alarm" : highPriorityRows.some(row => row.wl >= row.alert) ? "Alert threshold" : "rise >0.30 m in 30 min"}); checking every 5 minutes.`
-              : "Normal monitoring; checking every 15 minutes.";
+            const monitoringStatus = highPriority
+              ? criticalRows.length ? "Critical level reached"
+                : alarmRows.length ? "Alarm level reached"
+                  : highPriorityRows.some(row => row.wl >= row.alert) ? "Alert level reached"
+                    : "Rapid rise detected"
+              : "Routine monitoring";
             const time = parseHeaderTime(raw);
             if (wlCardSource) {
+              const sourceStatus = /last saved|saved data/i.test(msg)
+                ? "Showing saved reading"
+                : /no .*data|not found/i.test(msg)
+                  ? "No recent reading"
+                  : "Live reading";
               wlCardSource.textContent = [
-                msg,
-                time ? `Source data time: ${time}` : "Source data time unavailable",
-                priorityNote
+                formatWaterLevelTime(time),
+                sourceStatus,
+                monitoringStatus,
+                `Checks every ${highPriority ? 5 : 15} min`
               ].filter(Boolean).join(" • ");
             }
             window.waterLevelRows = parsedRows;
@@ -6505,10 +6543,13 @@ function updateSanMateoPopup(marker, data){
               autoSkip:false,
               maxRotation:0,
               minRotation:0,
-              padding:8,
+              padding:6,
               color:"rgba(71,85,105,.88)",
-              font:{ weight:"600" },
-              callback:(val, idx)=> (idx % 2 === 0 ? labels[idx] : "")
+              font:{ size:10, weight:"600" },
+              callback:(val, idx)=> {
+                if (idx % 2 !== 0) return "";
+                return labels[idx]?.replace(/^0?(\d{1,2}):00\s+(AM|PM)$/i, "$1 $2") || "";
+              }
             }
           },
           y:{
@@ -6870,7 +6911,7 @@ function updateSanMateoPopup(marker, data){
     if (!row) {
       host.classList.add("is-empty");
       if (value) value.textContent = "—";
-      if (level) level.textContent = "No Data";
+      if (level) level.textContent = "No recent reading";
       if (bar) bar.style.width = "0%";
       return;
     }
@@ -6880,7 +6921,11 @@ function updateSanMateoPopup(marker, data){
 
     if (value) value.innerHTML = `${row.wl.toFixed(2)}<span class="wl-unit"> m</span>`;
     if (station) station.textContent = row.station;
-    if (level) level.textContent = levelName === "critical" ? "Critical" : levelName === "alarm" ? "Alarm" : levelName === "alert" ? "Alert" : "Normal";
+    if (level) {
+      level.textContent = levelName === "normal"
+        ? "Below alert level"
+        : `${levelName[0].toUpperCase()}${levelName.slice(1)} level reached`;
+    }
 
     const A = Number.isFinite(row.alert) ? row.alert : number(alertEl?.textContent);
     const AL = Number.isFinite(row.alarm) ? row.alarm : number(alarmEl?.textContent);
