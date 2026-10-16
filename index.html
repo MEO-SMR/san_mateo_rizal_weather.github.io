@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>San Mateo Weather & Situational Dashboard</title>
   <meta name="theme-color" content="#0d6efd" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="San Mateo Weather" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="mobile-apple-web-app-capable" content="yes" />
+  <meta name="mobile-apple-web-app-title" content="San Mateo Weather" />
+  <meta name="mobile-apple-web-app-status-bar-style" content="default" />
   <script>
     const savedWeatherTheme = localStorage.getItem("weather-theme");
     document.documentElement.dataset.theme = savedWeatherTheme ||
@@ -124,6 +124,7 @@
     }
     .nav-tabs .nav-link{ color:var(--muted); font-weight:600 }
     .nav-tabs .nav-link.active{ color:var(--text) }
+    .forecast-card .tab-content > .tab-pane:not(.active){ display:none !important; }
 
     /* Improved table readability */
     .forecast-table{
@@ -614,35 +615,38 @@
           #smr-wlrf .rf-legend-item--intense{color:#fb923c}
           #smr-wlrf .rf-legend-item--torrential{color:#f87171}
           #smr-wlrf #rf-table{width:100%;color:var(--table-text);border:1px solid var(--table-border);border-radius:12px;overflow:hidden}
-          #smr-wlrf #rf-table thead th{background:var(--table-header);color:var(--table-head-text);text-align:center;border-color:var(--table-border)}
-          #smr-wlrf #rf-table thead tr:nth-child(2) th{background:var(--table-header);color:var(--table-head-text)}
+          #smr-wlrf .rf-table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+          #smr-wlrf #rf-table{display:table;min-width:680px;table-layout:fixed}
+          #smr-wlrf #rf-table thead{display:table-header-group}
+          #smr-wlrf #rf-table tbody{display:table-row-group}
+          #smr-wlrf #rf-table tr{display:table-row}
+          #smr-wlrf #rf-table th,#smr-wlrf #rf-table td{display:table-cell;white-space:nowrap}
+          #smr-wlrf #rf-table thead th{background:var(--table-header);color:var(--table-head-text);text-align:center;vertical-align:middle;border-color:var(--table-border)}
+          #smr-wlrf #rf-table thead th:first-child,#smr-wlrf #rf-table tbody td:first-child{text-align:left}
+          #smr-wlrf #rf-table td::before{content:none}
           #smr-wlrf #rf-table tbody tr{background:var(--table-row)}
           #smr-wlrf #rf-table tbody tr:nth-child(even){background:var(--table-even)}
           #smr-wlrf #rf-table tbody td{color:var(--table-text);border-color:var(--table-border)}
           #smr-wlrf #rf-table tbody td:first-child{color:var(--text);font-weight:700}
           #smr-wlrf #rf-table tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
+          #smr-wlrf .wl-table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+          #smr-wlrf #wl-table{display:table;width:100%;min-width:780px;table-layout:fixed;color:var(--table-text);border:1px solid var(--table-border);border-radius:12px;overflow:hidden}
+          #smr-wlrf #wl-table thead{display:table-header-group}
+          #smr-wlrf #wl-table tbody{display:table-row-group}
+          #smr-wlrf #wl-table tr{display:table-row}
+          #smr-wlrf #wl-table th,#smr-wlrf #wl-table td{display:table-cell;white-space:nowrap}
+          #smr-wlrf #wl-table thead th{background:var(--table-header);color:var(--table-head-text);text-align:center;vertical-align:middle;border-color:var(--table-border)}
+          #smr-wlrf #wl-table thead th:first-child,#smr-wlrf #wl-table tbody td:first-child{text-align:left}
+          #smr-wlrf #wl-table tbody tr{background:var(--table-row)}
+          #smr-wlrf #wl-table tbody td{color:var(--table-text);border-color:var(--table-border)}
+          #smr-wlrf #wl-table tbody td:first-child{color:var(--text);font-weight:700}
+          #smr-wlrf #wl-table tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
+          #smr-wlrf #wl-table .wl-alert{color:var(--alert)}
+          #smr-wlrf #wl-table .wl-alarm{color:var(--alarm)}
+          #smr-wlrf #wl-table .wl-critical{color:var(--critical)}
           #smr-wlrf #rf-table .wl-alert{color:var(--alert)}
           #smr-wlrf #rf-table .wl-alarm{color:var(--alarm)}
           #smr-wlrf #rf-table .wl-critical{color:var(--critical)}
-          #smr-wlrf .rf-table-groups{
-            display:grid;grid-template-columns:24% 12% repeat(6,10.666%);
-            grid-template-rows:auto auto;margin-top:.35rem;background:var(--table-header);
-            border-bottom:2px solid var(--table-border);color:var(--table-head-text);
-            font-size:.88rem;font-weight:800;text-align:center
-          }
-          #smr-wlrf .rf-table-groups span{padding:.65rem .4rem}
-          #smr-wlrf .rf-table-groups__station{grid-column:1;grid-row:1 / span 2;display:flex;align-items:center;text-align:left}
-          #smr-wlrf .rf-table-groups__current{grid-column:2;grid-row:1;border-bottom:1px solid var(--table-border)}
-          #smr-wlrf .rf-table-groups__accumulated{grid-column:3 / span 6;grid-row:1;border-bottom:1px solid var(--table-border)}
-          #smr-wlrf .rf-table-groups__sub{grid-row:2}
-          @media (min-width:768px){
-            #smr-wlrf #rf-table{display:table;table-layout:fixed;min-width:700px}
-            #smr-wlrf #rf-table thead{display:table-header-group}
-            #smr-wlrf #rf-table tbody{display:table-row-group}
-            #smr-wlrf #rf-table tbody tr{display:table-row}
-            #smr-wlrf #rf-table th,#smr-wlrf #rf-table td{display:table-cell;width:auto;white-space:nowrap}
-            #smr-wlrf #rf-table td::before{content:none}
-          }
           /* colors */
           #smr-wlrf .wl-alert, #smr-wlrf .text-alert, #smr-wlrf td.num.wl-alert{ color:var(--alert);   font-weight:600; text-shadow:0 0 1px rgba(0,0,0,.25); }
           #smr-wlrf .wl-alarm, #smr-wlrf .text-alarm, #smr-wlrf td.num.wl-alarm{ color:var(--alarm);   font-weight:600; text-shadow:0 0 1px rgba(0,0,0,.25); }
@@ -785,14 +789,6 @@
   .rtable tr.row-alarm    { background: rgba(251,146,60,.10); }
   .rtable tr.row-critical { background: rgba(239, 68,68,.12); }
 }
-
-@media (max-width: 420px) {
-  /* hide Alert/Alarm/Critical cells on very narrow screens */
-  table[aria-label*="Water Level"] tbody td:nth-child(n+3) { display: none; }
-  /* for Rainfall, keep Station + Current + 1hr only */
-  table[aria-label*="Rainfall"] tbody td:nth-child(n+4) { display: none; }
-}
-
 
 </style>
 <style>
@@ -2382,7 +2378,6 @@ main > .card:first-child #actions-ai-note{
   color:var(--muted) !important;
 }
 #alert-chips .chip{
-  color:var(--text) !important;
   border:1px solid var(--border);
 }
 
@@ -2943,9 +2938,6 @@ main > .card:first-child #actions-ai-note{
 <div class="d-flex align-items-center justify-content-between mb-1">
   <div class="fw-semibold">San Mateo river levels</div>
 </div>
-<div class="small text-muted mb-1">FFWWS · Water level in metres (m)</div>
-<div id="wl-card-source" class="small text-muted mb-2" aria-live="polite">Update time unavailable · Loading readings</div>
-
 <div class="wl-grid">
   <div class="wl-card" id="wl-card-sm1" aria-live="polite">
     <div class="wl-title">Banaba–Batasan Bridge</div>
@@ -2973,9 +2965,9 @@ main > .card:first-child #actions-ai-note{
       </div>
       <div class="wl-right">
         <div class="wl-badges">
-          <span class="wl-badge wl-badge--y"><span>Alert</span><span id="wl-card-sn-a">15</span><span>m</span></span>
-          <span class="wl-badge wl-badge--o"><span>Alarm</span><span id="wl-card-sn-al">16</span><span>m</span></span>
-          <span class="wl-badge wl-badge--r"><span>Critical</span><span id="wl-card-sn-c">17</span><span>m</span></span>
+          <span class="wl-badge wl-badge--y"><span>Alert</span><span id="wl-card-sn-a">14</span><span>m</span></span>
+          <span class="wl-badge wl-badge--o"><span>Alarm</span><span id="wl-card-sn-al">15</span><span>m</span></span>
+          <span class="wl-badge wl-badge--r"><span>Critical</span><span id="wl-card-sn-c">16</span><span>m</span></span>
         </div>
       </div>
     </div>
@@ -2989,7 +2981,7 @@ main > .card:first-child #actions-ai-note{
     </div>
 
 <!-- Forecasts -->
-<div class="card border-0 shadow-sm mb-3">
+<div class="card border-0 shadow-sm mb-3 forecast-card">
   <div class="card-header titled">FORECASTS</div>
   <div class="card-body">
     <ul class="nav nav-tabs mb-3" role="tablist">
@@ -3056,8 +3048,8 @@ main > .card:first-child #actions-ai-note{
             </thead>
             <tbody id="forecastTableBody"></tbody>
           </table>
+          </div>
         </div>
-      </div>
 
 <!-- Hourly Rain (6h) -->
 <div class="tab-pane fade" id="tab-rain" role="tabpanel" aria-labelledby="tab-rain-btn">
@@ -3138,7 +3130,7 @@ main > .card:first-child #actions-ai-note{
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="tab-smr-btn" data-bs-toggle="tab"
           data-bs-target="#tab-smr" type="button" role="tab" aria-controls="tab-smr"
-          aria-selected="true">📊 SMR RF</button>
+          aria-selected="true">📊 SMR WL/RF</button>
       </li>
       <!-- PAGASA HIMAWARI SATELLITE -->
       <li class="nav-item" role="presentation">
@@ -3154,10 +3146,54 @@ main > .card:first-child #actions-ai-note{
       <div class="tab-pane fade show active p-2" id="tab-smr" role="tabpanel" aria-labelledby="tab-smr-btn">
         <!-- Scope styles inside this tab to avoid clashes -->
         <div id="smr-wlrf">
+          <!-- WATER LEVEL -->
+          <section class="card table-wrap">
+            <div class="hd">
+              <span>Water Level • Banaba-Batasan Bridge &amp; Sto Niño Bridge</span>
+              <small id="wl-table-updated" aria-live="polite">Source: FFWWS</small>
+            </div>
+            <div class="bd">
+              <div id="wl-table-note" class="muted mb-2">Loading…</div>
+              <div class="wl-table-scroll">
+              <table id="wl-table" aria-label="FFWWS Water Level">
+                <colgroup>
+                  <col style="width:24%">
+                  <col style="width:10.5%">
+                  <col style="width:10.5%">
+                  <col style="width:10.5%">
+                  <col style="width:10.5%">
+                  <col style="width:11.33%">
+                  <col style="width:11.33%">
+                  <col style="width:11.34%">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th rowspan="2">Station</th>
+                    <th colspan="4" class="text-center">Observed WL [EL.m]</th>
+                    <th colspan="3" class="text-center">Warning WL [EL.m]</th>
+                  </tr>
+                  <tr>
+                    <th class="num">Current</th>
+                    <th class="num">-30 min</th>
+                    <th class="num">-1 hr</th>
+                    <th class="num">-2 hr</th>
+                    <th class="num col-alert">Alert</th>
+                    <th class="num col-alarm">Alarm</th>
+                    <th class="num col-critical">Critical</th>
+                  </tr>
+                </thead>
+                <tbody id="wl-table-tbody">
+                  <tr><td colspan="8" class="muted">Loading…</td></tr>
+                </tbody>
+              </table>
+              </div>
+            </div>
+          </section>
+
           <!-- RAINFALL -->
           <section class="card table-wrap">
             <div class="hd">
-              <span>Rainfall • Freedom Park &amp; Pintong Bukawe</span>
+              <span>Rainfall • Freedom Park</span>
               <small id="rf-updated" aria-live="polite">Source: FFWWS</small>
             </div>
             <div class="bd">
@@ -3167,19 +3203,8 @@ main > .card:first-child #actions-ai-note{
                 <span class="rf-legend-item rf-legend-item--intense">Intense ≥ 15 mm</span>
                 <span class="rf-legend-item rf-legend-item--torrential">Torrential ≥ 30 mm</span>
               </div>
-              <div class="rf-table-groups" aria-hidden="true">
-                <span class="rf-table-groups__station">Station</span>
-                <span class="rf-table-groups__current">RF [mm]</span>
-                <span class="rf-table-groups__accumulated">Accumulated RF [mm]</span>
-                <span class="rf-table-groups__sub">Current</span>
-                <span class="rf-table-groups__sub">30 min</span>
-                <span class="rf-table-groups__sub">1 hr</span>
-                <span class="rf-table-groups__sub">3 hr</span>
-                <span class="rf-table-groups__sub">6 hr</span>
-                <span class="rf-table-groups__sub">12 hr</span>
-                <span class="rf-table-groups__sub">24 hr</span>
-              </div>
-              <table class="rtable stack-table" id="rf-table" aria-label="FFWWS Rainfall">
+              <div class="rf-table-scroll">
+              <table id="rf-table" aria-label="FFWWS Rainfall">
                 <colgroup>
                   <col style="width:24%">
                   <col style="width:12%">
@@ -3190,16 +3215,20 @@ main > .card:first-child #actions-ai-note{
                   <col style="width:10.66%">
                   <col style="width:10.66%">
                 </colgroup>
-                <thead class="ffwws-accessible-head">
+                <thead>
                   <tr>
-                    <th>Station</th>
+                    <th rowspan="2">Station</th>
+                    <th class="text-center" colspan="1">RF [mm]</th>
+                    <th class="text-center" colspan="6">Accumulated RF [mm]</th>
+                  </tr>
+                  <tr>
                     <th class="num">Current</th>
                     <th class="num">30 min</th>
-                    <th class="num">1hr</th>
-                    <th class="num">3hr</th>
-                    <th class="num">6hr</th>
-                    <th class="num">12hr</th>
-                    <th class="num">24hr</th>
+                    <th class="num">1 hr</th>
+                    <th class="num">3 hr</th>
+                    <th class="num">6 hr</th>
+                    <th class="num">12 hr</th>
+                    <th class="num">24 hr</th>
                   </tr>
                 </thead>
                 <tbody id="rf-tbody">
@@ -3418,7 +3447,7 @@ main > .card:first-child #actions-ai-note{
     <script>
       const APP_CONFIG = (() => {
         const xhr = new XMLHttpRequest();
-        xhr.open("GET", "./constants.json", false);
+        xhr.open("GET", `./constants.json?_=${Date.now()}`, false);
         xhr.send(null);
 
         if (xhr.status !== 200) {
@@ -3644,13 +3673,19 @@ main > .card:first-child #actions-ai-note{
         const watchFallback = () => document.getElementById("ytWatchFallback");
         let embedTimeout = null;
         let embedRequest = 0;
+        let youtubePlayer = null;
+        let youtubePlayerApiLoading = false;
+        let fallbackAttempt = 0;
+        const maxFallbackAttempts = 5;
 
         function showPlayerMessage(text, url, videoId = "") {
+          const iframe = frame();
           const message = playerMessage();
           const messageText = playerMessageText();
           const thumbnail = videoThumbnail();
           const thumbnailAnchor = thumbnailLink();
           const watchLink = watchFallback();
+          if (iframe?.parentElement) iframe.parentElement.style.display = "none";
           if (messageText) messageText.textContent = text;
           if (watchLink && url) watchLink.href = url;
           if (thumbnailAnchor && thumbnail && validVideoId(videoId)) {
@@ -3679,11 +3714,117 @@ main > .card:first-child #actions-ai-note{
           return `${String(APP_CONFIG.api.youtubeProxy || "").trim()}?${params.toString()}`;
         }
 
+        function youtubeEmbedUrl(videoId) {
+          const embedBase = String(
+            APP_CONFIG.youtube.embedBase || "https://www.youtube.com/embed/"
+          ).trim();
+          const url = new URL(
+            encodeURIComponent(videoId),
+            embedBase.endsWith("/") ? embedBase : `${embedBase}/`
+          );
+          url.searchParams.set("playsinline", "1");
+          url.searchParams.set("rel", "0");
+          url.searchParams.set("enablejsapi", "1");
+          url.searchParams.set("origin", window.location.origin);
+          return url.toString();
+        }
+
+        function uploadsPlaylistId() {
+          const channelId = String(APP_CONFIG.youtube.channelId || "");
+          return channelId.startsWith("UC")
+            ? `UU${channelId.slice(2)}`
+            : "";
+        }
+
+        function attachYouTubePlayer() {
+          const iframe = frame();
+          if (!iframe || youtubePlayer || !window.YT?.Player) return;
+
+          youtubePlayer = new window.YT.Player(iframe, {
+            events: {
+              onError: handlePlayerError,
+              onStateChange(event) {
+                if (event.data !== window.YT.PlayerState.PLAYING) return;
+
+                const video = youtubePlayer?.getVideoData?.();
+                if (video?.title && titleNode()) {
+                  titleNode().textContent = video.title;
+                }
+                if (fallbackAttempt > 0) {
+                  const badgeNode = badge();
+                  const status = stamp();
+                  if (badgeNode) badgeNode.textContent = "Recent Video";
+                  if (status) status.textContent = "Playing a recent DOST-PAGASA video";
+                }
+                if (frame()?.parentElement) frame().parentElement.style.removeProperty("display");
+                const message = playerMessage();
+                if (message) message.hidden = true;
+              }
+            }
+          });
+        }
+
+        function initializeYouTubePlayer() {
+          if (window.YT?.Player) {
+            attachYouTubePlayer();
+            return;
+          }
+          if (youtubePlayerApiLoading) return;
+
+          youtubePlayerApiLoading = true;
+          const previousReadyHandler = window.onYouTubeIframeAPIReady;
+          window.onYouTubeIframeAPIReady = () => {
+            if (typeof previousReadyHandler === "function") {
+              previousReadyHandler();
+            }
+            attachYouTubePlayer();
+          };
+
+          const script = document.createElement("script");
+          script.src = "https://www.youtube.com/iframe_api";
+          script.onerror = () => {
+            youtubePlayerApiLoading = false;
+          };
+          document.head.appendChild(script);
+        }
+
+        function handlePlayerError(event) {
+          const playlistId = uploadsPlaylistId();
+          if (playlistId && fallbackAttempt < maxFallbackAttempts) {
+            fallbackAttempt += 1;
+            const message =
+              "The newest video is unavailable. Trying the next recent DOST-PAGASA video…";
+            showPlayerMessage(
+              message,
+              APP_CONFIG.youtube.videosUrl,
+              ""
+            );
+            if (titleNode()) titleNode().textContent = message;
+            const status = stamp();
+            if (status) status.textContent = "Skipping an unavailable video";
+            youtubePlayer?.loadPlaylist?.({
+              listType: "playlist",
+              list: playlistId,
+              index: fallbackAttempt
+            });
+            return;
+          }
+
+          const errorCode = Number(event?.data);
+          showPlayerMessage(
+            `YouTube could not play this video${errorCode ? ` (error ${errorCode})` : ""}. You can try another DOST-PAGASA video on YouTube.`,
+            APP_CONFIG.youtube.videosUrl
+          );
+          if (titleNode()) titleNode().textContent = "Video unavailable";
+          if (badge()) badge().textContent = "Unavailable";
+        }
+
         function loadVideo(videoId = "") {
           const iframe = frame();
           if (!iframe) return;
 
           const requestId = ++embedRequest;
+          fallbackAttempt = 0;
           const validId = validVideoId(videoId) ? videoId : "";
           const videoUrl = validId
             ? `https://www.youtube.com/watch?v=${validId}`
@@ -3699,7 +3840,9 @@ main > .card:first-child #actions-ai-note{
           iframe.dataset.proxyFallback = validId ? "false" : "true";
           iframe.src = "about:blank";
           window.setTimeout(() => {
-            if (requestId === embedRequest) iframe.src = embedProxyUrl();
+            if (requestId === embedRequest) {
+              iframe.src = validId ? youtubeEmbedUrl(validId) : embedProxyUrl();
+            }
           }, 50);
 
           embedTimeout = window.setTimeout(() => {
@@ -3722,7 +3865,10 @@ main > .card:first-child #actions-ai-note{
           ) return;
           if (embedTimeout) clearTimeout(embedTimeout);
           const message = playerMessage();
+          if (iframe.parentElement) iframe.parentElement.style.removeProperty("display");
+          iframe.style.display = "block";
           if (message) message.hidden = true;
+          if (iframe.dataset.videoId) initializeYouTubePlayer();
         });
 
         frame()?.addEventListener("error", () => {
@@ -3929,6 +4075,28 @@ main > .card:first-child #actions-ai-note{
           };
         }
 
+        function configuredLatestVideo() {
+          const videoId = String(APP_CONFIG.youtube.latestVideoId || "").trim();
+          if (!validVideoId(videoId)) return null;
+
+          return {
+            videoId,
+            title: String(
+              APP_CONFIG.youtube.latestVideoTitle ||
+              "DOST-PAGASA Latest Update"
+            ).trim(),
+            publishedAt: String(
+              APP_CONFIG.youtube.latestVideoPublishedAt || ""
+            ).trim(),
+            url: `https://www.youtube.com/watch?v=${videoId}`,
+            source: "Configured DOST-PAGASA video",
+            status: "uploaded",
+            privacyStatus: "public",
+            embeddable: true,
+            cached: false
+          };
+        }
+
         function statusLabel(status) {
           switch (String(status || "").toLowerCase()) {
             case "live":
@@ -3988,6 +4156,7 @@ main > .card:first-child #actions-ai-note{
           }
 
           iframe.style.display = "block";
+          loadVideo(item.videoId);
 
           if (status) {
             const published = item.publishedAt
@@ -4003,15 +4172,19 @@ main > .card:first-child #actions-ai-note{
               `${published}${cacheNote}`;
           }
 
+          fallbackAttempt = 0;
           return true;
         }
 
         async function refresh() {
           clearLegacyCache();
-          loadVideo();
+
+          const configured = configuredLatestVideo();
+          if (configured && render(configured)) {
+            return configured;
+          }
 
           const latest = await fetchAppsScriptJSONP();
-
           if (latest && render(latest)) {
             return latest;
           }
@@ -4278,18 +4451,71 @@ function renderRizalPill(n){
             .normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ñ/ig,"n")
             .toLowerCase().replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\./g,"")
             .replace(/\s*-\s*/g,"-").replace(/\s+/g,"").replace(/[^\w-]+/g,"");
+          const FFWWS_API_URL = String(APP_CONFIG.api.ffwwsProxy || "").trim();
+          function fetchFFWWSJSONP(fn) {
+            return new Promise((resolve, reject) => {
+              const callbackName = `__ffwws_${fn}_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
+              const script = document.createElement("script");
+              let settled = false;
+              const cleanup = () => {
+                delete window[callbackName];
+                script.remove();
+              };
+              const finish = (error, payload) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                cleanup();
+                if (error) reject(error);
+                else resolve(payload);
+              };
+              const timer = setTimeout(
+                () => finish(new Error(`FFWWS ${fn} JSONP request timed out`)),
+                20000
+              );
+
+              if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/i.test(FFWWS_API_URL)) {
+                finish(new Error("FFWWS Apps Script URL is invalid"));
+                return;
+              }
+
+              window[callbackName] = payload => finish(null, payload);
+              script.onerror = () => finish(new Error(`FFWWS ${fn} JSONP request failed`));
+              const url = new URL(FFWWS_API_URL);
+              url.searchParams.set("fn", fn);
+              url.searchParams.set("callback", callbackName);
+              url.searchParams.set("cb", String(Date.now()));
+              script.src = url.toString();
+              script.async = true;
+              document.head.appendChild(script);
+            });
+          }
+          function findRecordList(value, names) {
+            if (Array.isArray(value)) return value.filter(item => item && typeof item === "object");
+            if (!value || typeof value !== "object") return [];
+            const wanted = new Set(names.map(name => name.toLowerCase()));
+            for (const [key, nested] of Object.entries(value)) {
+              if (wanted.has(key.toLowerCase()) && Array.isArray(nested)) {
+                return nested.filter(item => item && typeof item === "object");
+              }
+            }
+            for (const nested of Object.values(value)) {
+              if (nested && typeof nested === "object") {
+                const records = findRecordList(nested, names);
+                if (records.length) return records;
+              }
+            }
+            return [];
+          }
+          function recordNumber(record, aliases) {
+            const values = new Map(Object.entries(record).map(([key, value]) => [key.toLowerCase(), value]));
+            for (const alias of aliases) {
+              const value = values.get(alias.toLowerCase());
+              if (value !== undefined && value !== null && value !== "") return Number(value);
+            }
+            return NaN;
+          }
           const parseHeaderTime = t => ((t||"").match(/Time\s*:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[0-9]{2}:[0-9]{2})/)||[])[1]||"";
-          const formatWaterLevelTime = value => {
-            const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
-            if (!match) return "Update time unavailable";
-            const [, year, month, day, hour, minute] = match;
-            const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:00Z`);
-            const formatted = new Intl.DateTimeFormat("en-PH", {
-              timeZone: "UTC", month: "short", day: "numeric",
-              hour: "numeric", minute: "2-digit"
-            }).format(date);
-            return `Updated ${formatted}`;
-          };
           const chooseBest = (latest, prev, valid) => {
             if (valid(latest||"")) return {raw:latest, from:"latest"};
             if (valid(prev||""))   return {raw:prev,   from:"previous"};
@@ -4339,22 +4565,24 @@ function pickSavedWithData(keys, validator){
 
           /* ================= WATER LEVEL ================= */
           const WL_CANDS = [
-            // Primary: PAGASA page through Jina text extraction
+            // Fallback: PAGASA page through Jina text extraction
             "https://r.jina.ai/https://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/water/map.do",
             "https://r.jina.ai/http://pasig-marikina-tullahanffws.pagasa.dost.gov.ph/water/map.do"
           ];
 
-          // Secondary source: existing LGU Apps Script endpoint.
-          // The PAGASA water/map.do page can render the table shell without
-          // exposing the live station rows to a text proxy, so keep the
-          // structured JSON fallback used by the original dashboard.
-          const WL_JSON_URL = APP_CONFIG.api.ffwwsProxy;
+          // The structured Apps Script API is the primary water-level source.
           const WL_KEYS = { latest:"ffwws_raw_text", prev:"ffwws_raw_text_prev", newest:"ffwws_raw_text_new" };
           const WL_TARGETS = [
             { key:"sanmateo-1", label:"Banaba-Batasan Bridge", alert:18, alarm:19, critical:20 },
-            { key:"stonino",    label:"Sto Niño Bridge", alert:15, alarm:16, critical:17 }
+            { key:"stonino",    label:"Sto Niño Bridge", alert:14, alarm:15, critical:16 }
           ];
-          const wlCardSource = document.getElementById("wl-card-source");
+          const WL_TABLE_TARGETS = [
+            { label:"Banaba-Batasan Bridge", match:/banaba|batasan|san\s*mateo\s*[-–—]?\s*1/i },
+            { label:"Sto Niño Bridge", match:/sto\.?\s*ni(?:n|ñ)o/i }
+          ];
+          const wlTableBody = document.getElementById("wl-table-tbody");
+          const wlTableNote = document.getElementById("wl-table-note");
+          const wlTableUpdated = document.getElementById("wl-table-updated");
 
           function wl_captureAfterName(text, nameRegex, canonicalKey, labelText){
             const m = (text||"").match(nameRegex);
@@ -4379,6 +4607,21 @@ function pickSavedWithData(keys, validator){
             for (const line of txt.split("\n")){
               const s = line.trim(); if(!s || /^station\b/i.test(s)) continue;
               const separator = s.indexOf("|");
+              if (separator >= 0) {
+                const columns = s.split("|").map(column => column.trim());
+                if (columns.length >= 8) {
+                  const name = columns[0]
+                    .replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\s*-\s*/g,"-");
+                  const values = columns.slice(1, 8).map(value => value ? toNum(value) : NaN);
+                  if (name && Number.isFinite(values[0]) && [values[4], values[5], values[6]].every(Number.isFinite)) {
+                    rows.push({
+                      station:name, wl:values[0], m30:values[1], m1h:values[2], m2h:values[3],
+                      alert:values[4], alarm:values[5], critical:values[6], key:normKey(name)
+                    });
+                    continue;
+                  }
+                }
+              }
               const p = s.search(/[0-9]/);
               const namePart = separator >= 0 ? s.slice(0, separator) : s.slice(0, p);
               const valuePart = separator >= 0 ? s.slice(separator + 1) : s.slice(p);
@@ -4427,7 +4670,9 @@ function pickSavedWithData(keys, validator){
                        || wl_captureAfterName(txt,/banaba[^a-z]{0,10}batasan/i,"sanmateo-1","San Mateo-1");
               if (sm1) rows.push(sm1);
             }
-            if (!byKey["stonino"]) {
+            if (!byKey["stonino"] && !rows.some(row =>
+              /sto\.?\s*ni(?:n|ñ)o/i.test(row.station) && /\bmmda\b/i.test(row.station)
+            )) {
               const sn = wl_captureAfterName(txt,/sto\.?\s*ni(?:n|ñ)o/i,"stonino","Sto Nino");
               if (sn) rows.push(sn);
             }
@@ -4436,44 +4681,58 @@ function pickSavedWithData(keys, validator){
           const wl_getValid = raw => wl_extractAll(raw||"").length>0;
 
           function wl_render(raw,msg){
-            const parsedRows = wl_extractAll(raw||"").map(row => {
-              const target = WL_TARGETS.find(item => item.key === row.key);
-              return target
-                ? { ...row, alert:target.alert, alarm:target.alarm, critical:target.critical }
-                : row;
-            });
+            const parsedRows = wl_extractAll(raw||"")
+              .filter(row => !/\bmmda\b/i.test(row.station))
+              .map(row => {
+                const target = WL_TARGETS.find(item =>
+                  item.key === row.key ||
+                  (item.key === "stonino" && /sto\.?\s*ni(?:n|ñ)o/i.test(row.station))
+                );
+                return target
+                  ? { ...row, alert:target.alert, alarm:target.alarm, critical:target.critical }
+                  : row;
+              });
+            if (wlTableBody) {
+              const tableRows = WL_TABLE_TARGETS.flatMap(target => {
+                const row = parsedRows.find(item =>
+                  !/\bmmda\b/i.test(item.station) && target.match.test(item.station)
+                );
+                return row ? [{ target, row }] : [];
+              });
+              wlTableBody.innerHTML = tableRows.length
+                ? tableRows.map(({ target, row }) => `<tr>
+                    <td data-label="Station">${target.label}</td>
+                    <td data-label="Current [EL.m]" class="num">${toFix(row.wl)}</td>
+                    <td data-label="-30 min [EL.m]" class="num">${toFix(row.m30)}</td>
+                    <td data-label="-1 hr [EL.m]" class="num">${toFix(row.m1h)}</td>
+                    <td data-label="-2 hr [EL.m]" class="num">${toFix(row.m2h)}</td>
+                    <td data-label="Alert" class="num wl-alert">${toFix(row.alert)}</td>
+                    <td data-label="Alarm" class="num wl-alarm">${toFix(row.alarm)}</td>
+                    <td data-label="Critical" class="num wl-critical">${toFix(row.critical)}</td>
+                  </tr>`).join("")
+                : `<tr><td colspan="8" class="muted">No Banaba-Batasan or Sto Niño Bridge readings available.</td></tr>`;
+            }
+            if (wlTableNote) {
+              wlTableNote.textContent = /last saved|saved data/i.test(msg)
+                ? "Loaded from saved data."
+                : /no .*data|not found/i.test(msg)
+                  ? "No recent water-level data."
+                  : "Live water-level data.";
+            }
+            if (wlTableUpdated) {
+              const timeLabel = time => time ? `Time: ${time} • ` : "";
+              wlTableUpdated.textContent = `${timeLabel(parseHeaderTime(raw))}Source: FFWWS`;
+            }
             const highPriorityRows = parsedRows.filter(row =>
               row.wl >= row.alert ||
               row.wl >= row.alarm ||
               row.wl >= row.critical ||
               (Number.isFinite(row.m30) && row.wl - row.m30 > 0.30)
             );
-            const alarmRows = parsedRows.filter(row => row.wl >= row.alarm);
-            const criticalRows = parsedRows.filter(row => row.wl >= row.critical);
             const highPriority = highPriorityRows.length > 0;
             wlRefreshMs = highPriority ? WL_HIGH_PRIORITY_REFRESH_MS : WL_NORMAL_REFRESH_MS;
             window.setDashboardRefreshMode?.(highPriority);
 
-            const monitoringStatus = highPriority
-              ? criticalRows.length ? "Critical level reached"
-                : alarmRows.length ? "Alarm level reached"
-                  : highPriorityRows.some(row => row.wl >= row.alert) ? "Alert level reached"
-                    : "Rapid rise detected"
-              : "Routine monitoring";
-            const time = parseHeaderTime(raw);
-            if (wlCardSource) {
-              const sourceStatus = /last saved|saved data/i.test(msg)
-                ? "Showing saved reading"
-                : /no .*data|not found/i.test(msg)
-                  ? "No recent reading"
-                  : "Live reading";
-              wlCardSource.textContent = [
-                formatWaterLevelTime(time),
-                sourceStatus,
-                monitoringStatus,
-                `Checks every ${highPriority ? 5 : 15} min`
-              ].filter(Boolean).join(" • ");
-            }
             window.waterLevelRows = parsedRows;
             window.dispatchEvent(new CustomEvent("dashboard:waterlevel-updated", {
               detail: { rows: parsedRows }
@@ -4502,7 +4761,7 @@ function pickSavedWithData(keys, validator){
             const timestampKeys = [
               "sourceTimestamp", "sourceTime", "observedAt", "observationTime",
               "observationTimestamp", "dataTimestamp", "dataTime",
-              "waterLevelTimestamp", "waterLevelTime", "timestamp"
+              "waterLevelTimestamp", "waterLevelTime", "rainfallTimestamp", "rainfallTime", "timestamp"
             ];
             const candidates = [data, data?.data, data?.result, data?.metadata, data?.meta];
             for (const candidate of candidates) {
@@ -4518,7 +4777,7 @@ function pickSavedWithData(keys, validator){
           function buildWLRawFromJSON(list = [], sourceTime = "") {
             return [
               ...(sourceTime ? [`Time: ${sourceTime}`] : []),
-              "Station | WL | Alert | Alarm | Critical",
+              "Station | WL | m30 | m1h | m2h | Alert | Alarm | Critical",
               ...list.map(r =>
                 `${r.station} | ${r.wl} | ${Number.isFinite(r.m30) ? r.m30 : ""} | ${Number.isFinite(r.m1h) ? r.m1h : ""} | ${Number.isFinite(r.m2h) ? r.m2h : ""} | ${r.alert} | ${r.alarm} | ${r.critical}`
               )
@@ -4526,35 +4785,20 @@ function pickSavedWithData(keys, validator){
           }
 
           async function getWLFromAppsScript(){
-            const response = await fetch(`${WL_JSON_URL}?fn=water_level&cb=${Date.now()}`, {
-              cache: "no-store",
-              headers: { Accept: "application/json, text/plain, */*" },
-              credentials: "omit"
-            });
-            if (!response.ok) throw new Error(`FFWWS Apps Script HTTP ${response.status}`);
-
-            const data = await response.json();
-            const list = Array.isArray(data?.waterLevel)
-              ? data.waterLevel
-              : Array.isArray(data?.waterlevel)
-                ? data.waterlevel
-                : Array.isArray(data?.water_level)
-                  ? data.water_level
-                  : Array.isArray(data?.data?.waterLevel)
-                    ? data.data.waterLevel
-                    : [];
+            const data = await fetchFFWWSJSONP("water_level");
+            const list = findRecordList(data, ["waterLevel", "waterlevel", "water_level", "stations", "records"]);
 
             if (!list.length) throw new Error("Apps Script returned no waterLevel records");
 
             const normalized = list.map(r => ({
-              station: r.station ?? r.name ?? r.stationName ?? "",
-              wl: Number(r.wl ?? r.waterLevel ?? r.current),
-              m30: Number(r.m30 ?? r.minus30min ?? r.waterLevel30minAgo ?? r.current30minAgo ?? r.current_m30 ?? r.wl30min ?? r.thirtyMinutesAgo),
-              m1h: Number(r.m1h ?? r.minus1hr ?? r.waterLevel1hrAgo ?? r.current1hrAgo ?? r.current_m1h ?? r.wl1hr ?? r.oneHourAgo),
-              m2h: Number(r.m2h ?? r.minus2hr ?? r.waterLevel2hrAgo ?? r.current2hrAgo ?? r.current_m2h ?? r.wl2hr ?? r.twoHoursAgo),
-              alert: Number(r.alert),
-              alarm: Number(r.alarm),
-              critical: Number(r.critical)
+              station: r.station ?? r.name ?? r.stationName ?? r.station_name ?? "",
+              wl: recordNumber(r, ["wl", "waterLevel", "current"]),
+              m30: recordNumber(r, ["m30", "minus30min", "waterLevel30minAgo", "current30minAgo", "current_m30", "wl30min", "thirtyMinutesAgo"]),
+              m1h: recordNumber(r, ["m1h", "minus1hr", "waterLevel1hrAgo", "current1hrAgo", "current_m1h", "wl1hr", "oneHourAgo"]),
+              m2h: recordNumber(r, ["m2h", "minus2hr", "waterLevel2hrAgo", "current2hrAgo", "current_m2h", "wl2hr", "twoHoursAgo"]),
+              alert: recordNumber(r, ["alert"]),
+              alarm: recordNumber(r, ["alarm"]),
+              critical: recordNumber(r, ["critical"])
             })).filter(r =>
               r.station &&
               Number.isFinite(r.wl) &&
@@ -4574,21 +4818,7 @@ function pickSavedWithData(keys, validator){
             try {
               let raw = "";
 
-              // 1. Try PAGASA/Jina.
-              try {
-                raw = await fetchViaJina(WL_CANDS);
-                if (wl_getValid(raw) && !isNoData(raw)) {
-                  localStorage.setItem(WL_KEYS.newest, raw);
-                  const old = localStorage.getItem(WL_KEYS.latest) || "";
-                  if (old) localStorage.setItem(WL_KEYS.prev, old);
-                  localStorage.setItem(WL_KEYS.latest, raw);
-                  wl_render(raw, "");
-                  return;
-                }
-              } catch (_) {}
-
-              // 2. PAGASA's map page is often only a shell to text proxies.
-              // Use the existing structured Apps Script source as the live fallback.
+              // Prefer the new FFWWS API; keep PAGASA/Jina as a fallback.
               try {
                 raw = await getWLFromAppsScript();
                 localStorage.setItem(WL_KEYS.newest, raw);
@@ -4597,9 +4827,25 @@ function pickSavedWithData(keys, validator){
                 localStorage.setItem(WL_KEYS.latest, raw);
                 wl_render(raw, "Live data via FFWWS service.");
                 return;
-              } catch (_) {}
+              } catch (error) {
+                console.warn("FFWWS water-level API failed; trying PAGASA fallback.", error);
+              }
 
-              // 3. Last-known-good cache.
+              try {
+                raw = await fetchViaJina(WL_CANDS);
+                if (wl_getValid(raw) && !isNoData(raw)) {
+                  localStorage.setItem(WL_KEYS.newest, raw);
+                  const old = localStorage.getItem(WL_KEYS.latest) || "";
+                  if (old) localStorage.setItem(WL_KEYS.prev, old);
+                  localStorage.setItem(WL_KEYS.latest, raw);
+                  wl_render(raw, "Live data via PAGASA fallback.");
+                  return;
+                }
+              } catch (error) {
+                console.warn("PAGASA water-level fallback failed.", error);
+              }
+
+              // Last-known-good cache.
               const pick = pickSavedWithData(WL_KEYS, wl_getValid);
               wl_render(
                 pick.raw,
@@ -4624,18 +4870,58 @@ function pickSavedWithData(keys, validator){
           ];
           const RF_KEYS = { latest:"rain_raw_text", prev:"rain_raw_text_prev", newest:"rain_raw_text_new" };
           const RF_TARGETS = [
-            { key:"sanmateo-2",    label:"Freedom Park, GB 1" },
-            { key:"pintongbukawe", label:"Pintong Bukawe" }
+            { key:"sanmateo-2", label:"Freedom Park, GB 1" }
           ];
+          const rf_keyForStation = station => {
+            const key = normKey(station);
+            if (/sanmateo-?2|freedompark/.test(key)) return "sanmateo-2";
+            return key;
+          };
           const rfUpdated = document.getElementById("rf-updated");
           const rfNote    = document.getElementById("rf-note");
           const rfBody    = document.getElementById("rf-tbody");
+
+          async function getRainfallFromAppsScript() {
+            const data = await fetchFFWWSJSONP("rainfall");
+            const list = findRecordList(data, ["rainfall", "rainFall", "rain", "stations", "records"]);
+            if (!list.length) throw new Error("Apps Script returned no rainfall records");
+
+            const rows = list.filter(record =>
+              /freedom\s*park|san\s*mateo\s*[-–—]?\s*2/i.test(
+                record.station ?? record.name ?? record.stationName ?? record.station_name ?? ""
+              )
+            ).map(record => {
+              const station = record.station ?? record.name ?? record.stationName ?? record.station_name ?? "";
+              return {
+                station,
+                current: recordNumber(record, ["current", "rf", "rainfall", "rain", "rfCurrent", "currentRainfall"]),
+                m30: recordNumber(record, ["m30", "rf30", "rf30min", "rain30", "rain30min", "rainfall30min", "thirtyMinutesAgo"]),
+                h1: recordNumber(record, ["h1", "m1h", "1h", "rf1h", "rf1hr", "rain1h", "rain1hr", "rainfall1h", "oneHourAgo"]),
+                h3: recordNumber(record, ["h3", "m3h", "3h", "rf3h", "rf3hr", "rain3h", "rain3hr", "rainfall3h"]),
+                h6: recordNumber(record, ["h6", "m6h", "6h", "rf6h", "rf6hr", "rain6h", "rain6hr", "rainfall6h"]),
+                h12: recordNumber(record, ["h12", "m12h", "12h", "rf12h", "rf12hr", "rain12h", "rain12hr", "rainfall12h"]),
+                h24: recordNumber(record, ["h24", "m24h", "24h", "rf24h", "rf24hr", "rain24h", "rain24hr", "rainfall24h"])
+              };
+            }).filter(row =>
+              row.station &&
+              [row.current, row.m30, row.h1, row.h3, row.h6, row.h12, row.h24].every(Number.isFinite)
+            );
+            if (!rows.length) throw new Error("Apps Script returned no complete rainfall station readings");
+
+            return [
+              ...(getWaterLevelSourceTime(data) ? [`Time: ${getWaterLevelSourceTime(data)}`] : []),
+              "Station | Current | 30 min | 1 hr | 3 hr | 6 hr | 12 hr | 24 hr",
+              ...rows.map(row =>
+                `${row.station} | ${row.current} | ${row.m30} | ${row.h1} | ${row.h3} | ${row.h6} | ${row.h12} | ${row.h24}`
+              )
+            ].join("\n");
+          }
 
           function rf_sweepFor(rx, raw, key){
             const m = (raw||"").match(rx); if(!m) return null;
             const nums = (raw.slice(m.index+m[0].length, m.index+m[0].length+320).match(/[0-9]+(?:\.[0-9]+)?/g)||[]).slice(0,7).map(toNum);
             if (nums.length===7 && nums.every(Number.isFinite))
-              return {station: key==="sanmateo-2"?"San Mateo-2":"Pintong Bukawe",
+              return {station:"San Mateo-2",
                       current:nums[0], m30:nums[1], h1:nums[2], h3:nums[3], h6:nums[4], h12:nums[5], h24:nums[6], key};
             return null;
           }
@@ -4645,11 +4931,23 @@ function pickSavedWithData(keys, validator){
             const rows=[];
             for (const line of txt.split("\n")){
               const s=line.trim(); if(!s || /^station\b/i.test(s)) continue;
+              const columns=s.split("|").map(value=>value.trim());
+              if (columns.length >= 8) {
+                const station=columns[0];
+                const nums=columns.slice(1,8).map(toNum);
+                if (station && nums.every(Number.isFinite)) {
+                  rows.push({
+                    station,current:nums[0],m30:nums[1],h1:nums[2],h3:nums[3],h6:nums[4],h12:nums[5],h24:nums[6],
+                    key:rf_keyForStation(station)
+                  });
+                  continue;
+                }
+              }
               const p=s.search(/[0-9]/); if (p<=0) continue;
               const name=s.slice(0,p).replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\s*-\s*/g,"-").replace(/^\|+\s*|\s*\|+$/g,"").trim();
               const nums=(s.slice(p).match(/[0-9]+(?:\.[0-9]+)?/g)||[]).slice(0,7).map(toNum);
               if (!name || nums.length<7 || nums.some(n=>!Number.isFinite(n))) continue;
-              rows.push({station:name,current:nums[0],m30:nums[1],h1:nums[2],h3:nums[3],h6:nums[4],h12:nums[5],h24:nums[6],key:normKey(name)});
+              rows.push({station:name,current:nums[0],m30:nums[1],h1:nums[2],h3:nums[3],h6:nums[4],h12:nums[5],h24:nums[6],key:rf_keyForStation(name)});
             }
             if (!rows.length){
               const rx=/(?:>)([^<]+?)<\/(?:td|th)>(?:\s*<td[^>]*>\s*[0-9.]+\s*<\/td>){7}/gi;
@@ -4659,7 +4957,7 @@ function pickSavedWithData(keys, validator){
                 const nums=(chunk.match(/[0-9]+(?:\.[0-9]+)?/g)||[]).slice(-7).map(toNum);
                 if (n && nums.length===7 && nums.every(Number.isFinite))
                   rows.push({station:n.trim().replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\s*-\s*/g,"-"),
-                             current:nums[0],m30:nums[1],h1:nums[2],h3:nums[3],h6:nums[4],h12:nums[5],h24:nums[6],key:normKey(n)});
+                             current:nums[0],m30:nums[1],h1:nums[2],h3:nums[3],h6:nums[4],h12:nums[5],h24:nums[6],key:rf_keyForStation(n)});
               }
             }
             const byKey = Object.fromEntries(rows.map(r=>[r.key,r]));
@@ -4668,10 +4966,6 @@ function pickSavedWithData(keys, validator){
                        || rf_sweepFor(/san\s*mateo[^0-9]{0,30}2/i, txt, "sanmateo-2")
                        || rf_sweepFor(/freedom\s*park/i, txt, "sanmateo-2");
               if (sm2) rows.push(sm2);
-            }
-            if (!byKey["pintongbukawe"]){
-              const pb = rf_sweepFor(/pintong\s*bukawe/i, txt, "pintongbukawe");
-              if (pb) rows.push(pb);
             }
             return rows;
           }
@@ -4704,14 +4998,20 @@ function pickSavedWithData(keys, validator){
           </tr>`);
             }
             rfBody.innerHTML = out.length ? out.join("") :
-              `<tr><td colspan="8" class="muted">Freedom Park / Pintong Bukawe not found.</td></tr>`;
+              `<tr><td colspan="8" class="muted">Freedom Park not found.</td></tr>`;
             const time = parseHeaderTime(raw);
             rfUpdated.textContent = `${time ? `Time: ${time} • ` : ""}Source: FFWWS`;
           }
 
           async function rf_fetchSave(){
   try{
-    const raw = await fetchViaJina(RF_CANDS);
+    let raw;
+    try {
+      raw = await getRainfallFromAppsScript();
+    } catch (error) {
+      console.warn("FFWWS rainfall API failed; trying PAGASA fallback.", error);
+      raw = await fetchViaJina(RF_CANDS);
+    }
     localStorage.setItem(RF_KEYS.newest, raw);
 
     const ok = rf_getValid(raw) && !isNoData(raw);
@@ -4724,7 +5024,8 @@ function pickSavedWithData(keys, validator){
       const pick = pickSavedWithData(RF_KEYS, rf_getValid);
       rf_render(pick.raw, pick.raw ? "No new data; using previous values." : "No data available.");
     }
-  }catch{
+  }catch(error){
+    console.error("FFWWS rainfall refresh failed.", error);
     const pick = pickSavedWithData(RF_KEYS, rf_getValid);
     rf_render(pick.raw, pick.raw ? "Fetch failed; showing last saved." : "Fetch failed; no data.");
   }
@@ -6945,7 +7246,7 @@ function updateSanMateoPopup(marker, data){
   function refresh(rows = window.waterLevelRows || []) {
     if (!Array.isArray(rows)) rows = [];
     for (const target of TARGETS) {
-      const row = rows.find(item => target.match.test(item.station));
+      const row = rows.find(item => !/\bmmda\b/i.test(item.station) && target.match.test(item.station));
       updateCard(target, row);
     }
   }
