@@ -22,7 +22,10 @@
     "openWeatherKey": "662bc47b0b806958a77b4b260951abb8",
     "endpoint": "https://script.google.com/macros/s/AKfycbwtPUx2qBvOAqj_pBu-IFf3bu2qb8mhtl8LhgadDQjTqq3ScQ8lU7meOHzDeh-uaFc_/exec",
     "youtubeProxy": "https://script.google.com/macros/s/AKfycbyH863c0eEqFXlcHrPmpGSTQvDBdz392wG_DYrTqUG1R7-T5KTKTEWonWvVaLsggHL8/exec",
-    "ffwwsProxy": "https://script.google.com/macros/s/AKfycbyzNjzUhHorQsaMERhY7eXsxQ-uPGQF1t4F87LkSscPnCcyCjnHXZKmeeyFfRTd1kTWwg/exec",
+    "ffwwsWaterLevel": "https://script.google.com/macros/s/AKfycbyzNjzUhHorQsaMERhY7eXsxQ-uPGQF1t4F87LkSscPnCcyCjnHXZKmeeyFfRTd1kTWwg/exec?fn=water_level",
+    "ffwwsRainfall": "https://script.google.com/macros/s/AKfycbyzNjzUhHorQsaMERhY7eXsxQ-uPGQF1t4F87LkSscPnCcyCjnHXZKmeeyFfRTd1kTWwg/exec?fn=rainfall",
+    "ffwwsWaterLevelSheet": "https://docs.google.com/spreadsheets/d/1fm7Qq3_k23-JlPykfNbhQhOvrt209fs92fClxqExME8/gviz/tq?tqx=out%3Acsv&gid=1314524010&sheet=WaterLevel&range=A1%3AI4",
+    "ffwwsRainfallSheet": "https://docs.google.com/spreadsheets/d/1fm7Qq3_k23-JlPykfNbhQhOvrt209fs92fClxqExME8/gviz/tq?tqx=out%3Acsv&sheet=RainFall&range=A1%3AI2",
     "pagasaSynopsisProxy": "https://script.google.com/macros/s/AKfycbzq9RMWg6dTZMpv9QKctHpc3-bPa0uCslgcN0z36AvKoYKD67tx_lyctFuZJ0llWFsF/exec"
   },
   "youtube": {
