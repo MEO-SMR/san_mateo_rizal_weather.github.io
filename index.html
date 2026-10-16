@@ -4451,9 +4451,17 @@ function renderRizalPill(n){
             .normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ñ/ig,"n")
             .toLowerCase().replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\./g,"")
             .replace(/\s*-\s*/g,"-").replace(/\s+/g,"").replace(/[^\w-]+/g,"");
-          const FFWWS_API_URL = String(APP_CONFIG.api.ffwwsProxy || "").trim();
+          const FFWWS_API_URLS = {
+            water_level: String(APP_CONFIG.api.ffwwsWaterLevel || APP_CONFIG.api.ffwwsProxy || "").trim(),
+            rainfall: String(APP_CONFIG.api.ffwwsRainfall || APP_CONFIG.api.ffwwsProxy || "").trim()
+          };
           function fetchFFWWSJSONP(fn) {
             return new Promise((resolve, reject) => {
+              const endpoint = FFWWS_API_URLS[fn];
+              if (!endpoint) {
+                reject(new Error(`FFWWS ${fn} endpoint is not configured`));
+                return;
+              }
               const callbackName = `__ffwws_${fn}_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
               const script = document.createElement("script");
               let settled = false;
@@ -4474,14 +4482,21 @@ function renderRizalPill(n){
                 20000
               );
 
-              if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/i.test(FFWWS_API_URL)) {
+              let url;
+              try {
+                url = new URL(endpoint);
+              } catch (error) {
+                finish(new Error(`FFWWS ${fn} endpoint is invalid`));
+                return;
+              }
+              if (url.protocol !== "https:" || url.hostname !== "script.google.com" ||
+                  !/^\/macros\/s\/[^/]+\/exec$/i.test(url.pathname)) {
                 finish(new Error("FFWWS Apps Script URL is invalid"));
                 return;
               }
 
               window[callbackName] = payload => finish(null, payload);
               script.onerror = () => finish(new Error(`FFWWS ${fn} JSONP request failed`));
-              const url = new URL(FFWWS_API_URL);
               url.searchParams.set("fn", fn);
               url.searchParams.set("callback", callbackName);
               url.searchParams.set("cb", String(Date.now()));
@@ -4524,7 +4539,7 @@ function renderRizalPill(n){
 
           // Treat explicit "No Data" banners as invalid, even if the page changed format
             // Helper: detect explicit "No Data" text
-const isNoData = raw => !raw || /(?:^|\b)no\s*data(?:\b|$)/i.test(raw||"");
+const isNoData = raw => !raw || /^[ \t]*(?:no\s*data(?:[ \t]+(?:available|found))?|no recent (?:water-level|rainfall) data)\.?[ \t]*$/im.test(raw||"");
 
 // Pick the first non-empty, non-"No Data" version from localStorage
 function pickSavedWithData(keys, validator){
@@ -4572,6 +4587,8 @@ function pickSavedWithData(keys, validator){
 
           // The structured Apps Script API is the primary water-level source.
           const WL_KEYS = { latest:"ffwws_raw_text", prev:"ffwws_raw_text_prev", newest:"ffwws_raw_text_new" };
+          const WL_HISTORY_KEY = "ffwws_water_level_history_v2";
+          const WL_HISTORY_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
           const WL_TARGETS = [
             { key:"sanmateo-1", label:"Banaba-Batasan Bridge", alert:18, alarm:19, critical:20 },
             { key:"stonino",    label:"Sto Niño Bridge", alert:14, alarm:15, critical:16 }
@@ -4583,6 +4600,56 @@ function pickSavedWithData(keys, validator){
           const wlTableBody = document.getElementById("wl-table-tbody");
           const wlTableNote = document.getElementById("wl-table-note");
           const wlTableUpdated = document.getElementById("wl-table-updated");
+
+          function getWLHistory() {
+            const raw = localStorage.getItem(WL_HISTORY_KEY);
+            if (!raw) return [];
+            try {
+              const history = JSON.parse(raw);
+              return Array.isArray(history) ? history : [];
+            } catch (error) {
+              console.warn("Saved water-level history is invalid; starting a new history.", error);
+              return [];
+            }
+          }
+
+          function wl_timestamp(raw) {
+            const sourceTime = parseHeaderTime(raw);
+            if (!sourceTime) return Date.now();
+            const timestamp = new Date(`${sourceTime.replace(" ", "T")}:00+08:00`).getTime();
+            return Number.isFinite(timestamp) ? timestamp : Date.now();
+          }
+
+          function wl_saveHistory(raw) {
+            const timestamp = wl_timestamp(raw);
+            const sample = { timestamp, readings: {} };
+            for (const row of wl_extractAll(raw)) {
+              if (/\bmmda\b/i.test(row.station)) continue;
+              const target = WL_TARGETS.find(item =>
+                item.key === row.key ||
+                (item.key === "stonino" && /sto\.?\s*ni(?:n|ñ)o/i.test(row.station)) ||
+                (item.key === "sanmateo-1" && /banaba|batasan|san\s*mateo\s*[-–—]?\s*1/i.test(row.station))
+              );
+              if (target && Number.isFinite(row.wl)) sample.readings[target.key] = row.wl;
+            }
+            if (!Object.keys(sample.readings).length) return;
+
+            const history = getWLHistory()
+              .filter(item => Number.isFinite(item?.timestamp) && item.timestamp >= timestamp - WL_HISTORY_MAX_AGE_MS);
+            if (!history.some(item => item.timestamp === timestamp)) history.push(sample);
+            history.sort((a, b) => a.timestamp - b.timestamp);
+            localStorage.setItem(WL_HISTORY_KEY, JSON.stringify(history));
+          }
+
+          function wl_historicalValue(targetKey, timestamp, offsetMs) {
+            const targetTimestamp = timestamp - offsetMs;
+            const maxAgeMs = offsetMs === 2 * 60 * 60 * 1000 ? 45 * 60 * 1000 : 30 * 60 * 1000;
+            const sample = getWLHistory()
+              .filter(item => item.timestamp <= targetTimestamp && item.timestamp >= targetTimestamp - maxAgeMs)
+              .sort((a, b) => b.timestamp - a.timestamp)[0];
+            const reading = sample?.readings?.[targetKey];
+            return Number.isFinite(reading) ? reading : NaN;
+          }
 
           function wl_captureAfterName(text, nameRegex, canonicalKey, labelText){
             const m = (text||"").match(nameRegex);
@@ -4609,14 +4676,24 @@ function pickSavedWithData(keys, validator){
               const separator = s.indexOf("|");
               if (separator >= 0) {
                 const columns = s.split("|").map(column => column.trim());
-                if (columns.length >= 8) {
+                if (!columns[0]) columns.shift();
+                if (!columns[columns.length - 1]) columns.pop();
+                if (columns.length >= 5) {
                   const name = columns[0]
-                    .replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\s*-\s*/g,"-");
-                  const values = columns.slice(1, 8).map(value => value ? toNum(value) : NaN);
-                  if (name && Number.isFinite(values[0]) && [values[4], values[5], values[6]].every(Number.isFinite)) {
+                    .replace(/[\u2012-\u2015\u2212]/g,"-").replace(/\s*-\s*/g,"-").replace(/^\|+|\|+$/g,"").trim();
+                  const values = columns.slice(1, 8).map(value =>
+                    value && value !== "-" ? toNum(value.replace(/\(\*\)/g,"")) : NaN
+                  );
+                  const detailed = columns.length >= 8;
+                  const alertIndex = detailed ? 4 : 1;
+                  if (name && Number.isFinite(values[0])) {
                     rows.push({
-                      station:name, wl:values[0], m30:values[1], m1h:values[2], m2h:values[3],
-                      alert:values[4], alarm:values[5], critical:values[6], key:normKey(name)
+                      station:name, wl:values[0],
+                      m30:detailed ? values[1] : NaN,
+                      m1h:detailed ? values[2] : NaN,
+                      m2h:detailed ? values[3] : NaN,
+                      alert:values[alertIndex], alarm:values[alertIndex + 1],
+                      critical:values[alertIndex + 2], key:normKey(name)
                     });
                     continue;
                   }
@@ -4678,20 +4755,37 @@ function pickSavedWithData(keys, validator){
             }
             return rows;
           }
-          const wl_getValid = raw => wl_extractAll(raw||"").length>0;
+          const wl_getValid = raw => wl_extractAll(raw||"").some(row =>
+            WL_TARGETS.some(target =>
+              row.key === target.key ||
+              (target.key === "sanmateo-1" && /banaba|batasan/i.test(row.station)) ||
+              (target.key === "stonino" && /sto\.?\s*ni(?:n|ñ)o/i.test(row.station))
+            )
+          );
 
           function wl_render(raw,msg){
+            const currentTimestamp = wl_timestamp(raw || "");
             const parsedRows = wl_extractAll(raw||"")
               .filter(row => !/\bmmda\b/i.test(row.station))
               .map(row => {
                 const target = WL_TARGETS.find(item =>
                   item.key === row.key ||
-                  (item.key === "stonino" && /sto\.?\s*ni(?:n|ñ)o/i.test(row.station))
+                  (item.key === "stonino" && /sto\.?\s*ni(?:n|ñ)o/i.test(row.station)) ||
+                  (item.key === "sanmateo-1" && /banaba|batasan|san\s*mateo\s*[-–—]?\s*1/i.test(row.station))
                 );
                 return target
-                  ? { ...row, alert:target.alert, alarm:target.alarm, critical:target.critical }
+                  ? {
+                      ...row,
+                      m30: Number.isFinite(row.m30) ? row.m30 : wl_historicalValue(target.key, currentTimestamp, 30 * 60 * 1000),
+                      m1h: Number.isFinite(row.m1h) ? row.m1h : wl_historicalValue(target.key, currentTimestamp, 60 * 60 * 1000),
+                      m2h: Number.isFinite(row.m2h) ? row.m2h : wl_historicalValue(target.key, currentTimestamp, 2 * 60 * 60 * 1000),
+                      alert:target.alert, alarm:target.alarm, critical:target.critical
+                    }
                   : row;
               });
+            const hasHistoricalReadings = parsedRows.some(row =>
+              [row.m30, row.m1h, row.m2h].some(Number.isFinite)
+            );
             if (wlTableBody) {
               const tableRows = WL_TABLE_TARGETS.flatMap(target => {
                 const row = parsedRows.find(item =>
@@ -4713,15 +4807,20 @@ function pickSavedWithData(keys, validator){
                 : `<tr><td colspan="8" class="muted">No Banaba-Batasan or Sto Niño Bridge readings available.</td></tr>`;
             }
             if (wlTableNote) {
-              wlTableNote.textContent = /last saved|saved data/i.test(msg)
-                ? "Loaded from saved data."
+              wlTableNote.textContent = /waterlevel spreadsheet/i.test(msg)
+                ? "Live data from WaterLevel spreadsheet."
+                : /last saved|saved data/i.test(msg)
+                ? hasHistoricalReadings
+                  ? "Loaded from saved data."
+                  : "Loaded from saved data. Historical readings need live refreshes to accumulate."
                 : /no .*data|not found/i.test(msg)
                   ? "No recent water-level data."
                   : "Live water-level data.";
             }
             if (wlTableUpdated) {
               const timeLabel = time => time ? `Time: ${time} • ` : "";
-              wlTableUpdated.textContent = `${timeLabel(parseHeaderTime(raw))}Source: FFWWS`;
+              const source = /waterlevel spreadsheet/i.test(msg) ? "WaterLevel spreadsheet" : "FFWWS";
+              wlTableUpdated.textContent = `${timeLabel(parseHeaderTime(raw))}Source: ${source}`;
             }
             const highPriorityRows = parsedRows.filter(row =>
               row.wl >= row.alert ||
@@ -4812,6 +4911,117 @@ function pickSavedWithData(keys, validator){
             return raw;
           }
 
+          function parseSheetCSVRow(line) {
+            const cells = [];
+            let cell = "";
+            let quoted = false;
+            for (let index = 0; index < line.length; index++) {
+              const character = line[index];
+              if (character === '"' && quoted && line[index + 1] === '"') {
+                cell += '"';
+                index++;
+              } else if (character === '"') {
+                quoted = !quoted;
+              } else if (character === "," && !quoted) {
+                cells.push(cell.trim());
+                cell = "";
+              } else {
+                cell += character;
+              }
+            }
+            cells.push(cell.trim());
+            return cells;
+          }
+
+          async function getWLFromSheet() {
+            const endpoint = String(APP_CONFIG.api.ffwwsWaterLevelSheet || "").trim();
+            if (!endpoint) throw new Error("WaterLevel spreadsheet endpoint is not configured");
+
+            const controller = new AbortController();
+            const timeout = window.setTimeout(() => controller.abort(), 15000);
+            try {
+              const response = await fetch(endpoint, {
+                cache: "no-store",
+                credentials: "omit",
+                signal: controller.signal
+              });
+              if (!response.ok) throw new Error(`WaterLevel spreadsheet HTTP ${response.status}`);
+              const csv = (await response.text()).replace(/^\uFEFF/, "");
+              if (/^\s*</.test(csv) || /sign in to continue/i.test(csv)) {
+                throw new Error("WaterLevel spreadsheet did not return CSV data");
+              }
+
+              const rows = csv.split(/\r?\n/).filter(line => line.trim()).map(parseSheetCSVRow);
+              const headers = rows.shift() || [];
+              const column = pattern => headers.findIndex(header => pattern.test(header));
+              const stationColumn = column(/station|location|name/i);
+              const wlColumn = column(/\bcurrent\b|\bwl\b|water\s*level|observed/i);
+              if (stationColumn < 0 || wlColumn < 0) {
+                throw new Error("WaterLevel spreadsheet is missing station or current-level headers");
+              }
+
+              const numberAt = (row, index) => {
+                if (index < 0) return NaN;
+                const value = String(row[index] || "").replace(/\(\*\)/g, "").replace(/,/g, "").trim();
+                const match = value.match(/-?\d+(?:\.\d+)?/);
+                return match ? Number(match[0]) : NaN;
+              };
+              const readAt = (row, pattern) => numberAt(row, column(pattern));
+              const readings = rows.map(row => {
+                const station = String(row[stationColumn] || "").trim();
+                if (/\bmmda\b/i.test(station)) return null;
+                const tableTarget = WL_TABLE_TARGETS.find(target => target.match.test(station));
+                if (!tableTarget) return null;
+                return {
+                  station: tableTarget.label === "Banaba-Batasan Bridge" ? "San Mateo-1" : "Sto Nino",
+                  wl: numberAt(row, wlColumn),
+                  m30: readAt(row, /\bm30\b|30\s*(?:min|minutes)|minus\s*30/i),
+                  m1h: readAt(row, /\bm1h\b|1\s*(?:h|hr|hour)|minus\s*1/i),
+                  m2h: readAt(row, /\bm2h\b|2\s*(?:h|hr|hour)|minus\s*2/i),
+                  alert: readAt(row, /\balert\b/i),
+                  alarm: readAt(row, /\balarm\b/i),
+                  critical: readAt(row, /\bcritical\b/i)
+                };
+              }).filter(row => row && Number.isFinite(row.wl));
+
+              const raw = buildWLRawFromJSON(readings);
+              if (!wl_getValid(raw)) throw new Error("WaterLevel spreadsheet has no target station readings");
+              return raw;
+            } finally {
+              window.clearTimeout(timeout);
+            }
+          }
+
+          async function wl_supplementHistoryFromSheet(raw) {
+            const rows = wl_extractAll(raw);
+            const needsHistory = rows.some(row =>
+              WL_TARGETS.some(target => target.key === row.key) &&
+              ![row.m30, row.m1h, row.m2h].every(Number.isFinite)
+            );
+            if (!needsHistory) return { raw, supplemented: false };
+
+            const sheetRows = wl_extractAll(await getWLFromSheet())
+              .filter(row => !/\bmmda\b/i.test(row.station));
+            const sheetByKey = new Map(sheetRows.map(row => [row.key, row]));
+            let supplemented = false;
+            const merged = rows.map(row => {
+              const target = WL_TARGETS.find(item => item.key === row.key);
+              const sheetRow = target ? sheetByKey.get(target.key) : null;
+              if (!sheetRow) return row;
+              const result = { ...row };
+              for (const key of ["m30", "m1h", "m2h"]) {
+                if (!Number.isFinite(result[key]) && Number.isFinite(sheetRow[key])) {
+                  result[key] = sheetRow[key];
+                  supplemented = true;
+                }
+              }
+              return result;
+            });
+            return supplemented
+              ? { raw: buildWLRawFromJSON(merged, parseHeaderTime(raw)), supplemented: true }
+              : { raw, supplemented: false };
+          }
+
           async function wl_fetchSave(){
             if (wlFetchInProgress) return;
             wlFetchInProgress = true;
@@ -4821,11 +5031,20 @@ function pickSavedWithData(keys, validator){
               // Prefer the new FFWWS API; keep PAGASA/Jina as a fallback.
               try {
                 raw = await getWLFromAppsScript();
+                let historyNote = "";
+                try {
+                  const result = await wl_supplementHistoryFromSheet(raw);
+                  raw = result.raw;
+                  if (result.supplemented) historyNote = " History supplemented from WaterLevel spreadsheet.";
+                } catch (error) {
+                  console.warn("WaterLevel spreadsheet history lookup failed.", error);
+                }
+                wl_saveHistory(raw);
                 localStorage.setItem(WL_KEYS.newest, raw);
                 const old = localStorage.getItem(WL_KEYS.latest) || "";
                 if (old) localStorage.setItem(WL_KEYS.prev, old);
                 localStorage.setItem(WL_KEYS.latest, raw);
-                wl_render(raw, "Live data via FFWWS service.");
+                wl_render(raw, `Live data via FFWWS service.${historyNote}`);
                 return;
               } catch (error) {
                 console.warn("FFWWS water-level API failed; trying PAGASA fallback.", error);
@@ -4834,15 +5053,37 @@ function pickSavedWithData(keys, validator){
               try {
                 raw = await fetchViaJina(WL_CANDS);
                 if (wl_getValid(raw) && !isNoData(raw)) {
+                  let historyNote = "";
+                  try {
+                    const result = await wl_supplementHistoryFromSheet(raw);
+                    raw = result.raw;
+                    if (result.supplemented) historyNote = " History supplemented from WaterLevel spreadsheet.";
+                  } catch (error) {
+                    console.warn("WaterLevel spreadsheet history lookup failed.", error);
+                  }
+                  wl_saveHistory(raw);
                   localStorage.setItem(WL_KEYS.newest, raw);
                   const old = localStorage.getItem(WL_KEYS.latest) || "";
                   if (old) localStorage.setItem(WL_KEYS.prev, old);
                   localStorage.setItem(WL_KEYS.latest, raw);
-                  wl_render(raw, "Live data via PAGASA fallback.");
+                  wl_render(raw, `Live data via PAGASA fallback.${historyNote}`);
                   return;
                 }
               } catch (error) {
                 console.warn("PAGASA water-level fallback failed.", error);
+              }
+
+              try {
+                raw = await getWLFromSheet();
+                wl_saveHistory(raw);
+                localStorage.setItem(WL_KEYS.newest, raw);
+                const old = localStorage.getItem(WL_KEYS.latest) || "";
+                if (old) localStorage.setItem(WL_KEYS.prev, old);
+                localStorage.setItem(WL_KEYS.latest, raw);
+                wl_render(raw, "Live data via WaterLevel spreadsheet fallback.");
+                return;
+              } catch (error) {
+                console.warn("Water-level spreadsheet fallback failed.", error);
               }
 
               // Last-known-good cache.
@@ -4917,6 +5158,70 @@ function pickSavedWithData(keys, validator){
             ].join("\n");
           }
 
+          async function getRainfallFromSheet() {
+            const endpoint = String(APP_CONFIG.api.ffwwsRainfallSheet || "").trim();
+            if (!endpoint) throw new Error("RainFall spreadsheet endpoint is not configured");
+
+            const controller = new AbortController();
+            const timeout = window.setTimeout(() => controller.abort(), 15000);
+            try {
+              const response = await fetch(endpoint, {
+                cache: "no-store",
+                credentials: "omit",
+                signal: controller.signal
+              });
+              if (!response.ok) throw new Error(`RainFall spreadsheet HTTP ${response.status}`);
+              const csv = (await response.text()).replace(/^\uFEFF/, "");
+              if (/^\s*</.test(csv) || /sign in to continue/i.test(csv)) {
+                throw new Error("RainFall spreadsheet did not return CSV data");
+              }
+
+              const rows = csv.split(/\r?\n/).filter(line => line.trim()).map(parseSheetCSVRow);
+              const headers = rows.shift() || [];
+              const column = pattern => headers.findIndex(header => pattern.test(header));
+              const stationColumn = column(/station|location|name/i);
+              const metricColumns = [
+                column(/\bcurrent\b|\brf\b|rainfall|rain\s*level/i),
+                column(/\bm30\b|30\s*(?:min|minutes)|30m/i),
+                column(/\bh1\b|\bm1h\b|\b1\s*(?:h|hr|hour)\b/i),
+                column(/\bh3\b|\bm3h\b|\b3\s*(?:h|hr|hour)\b/i),
+                column(/\bh6\b|\bm6h\b|\b6\s*(?:h|hr|hour)\b/i),
+                column(/\bh12\b|\bm12h\b|\b12\s*(?:h|hr|hour)\b/i),
+                column(/\bh24\b|\bm24h\b|\b24\s*(?:h|hr|hour)\b/i)
+              ];
+              if (stationColumn < 0 || metricColumns.some(index => index < 0)) {
+                throw new Error("RainFall spreadsheet is missing station or rainfall-period headers");
+              }
+
+              const numberAt = (row, index) => {
+                const value = String(row[index] || "").replace(/,/g, "").trim();
+                const match = value.match(/-?\d+(?:\.\d+)?/);
+                return match ? Number(match[0]) : NaN;
+              };
+              const readings = rows.map(row => {
+                const station = String(row[stationColumn] || "").trim();
+                if (!/freedom\s*park|san\s*mateo\s*[-–—]?\s*2/i.test(station)) return null;
+                const values = metricColumns.map(index => numberAt(row, index));
+                if (!Number.isFinite(values[0])) return null;
+                return {
+                  station: "San Mateo-2",
+                  current: values[0], m30: values[1], h1: values[2], h3: values[3],
+                  h6: values[4], h12: values[5], h24: values[6]
+                };
+              }).filter(Boolean);
+              if (!readings.length) throw new Error("RainFall spreadsheet has no complete Freedom Park readings");
+
+              return [
+                "Station | Current | 30 min | 1 hr | 3 hr | 6 hr | 12 hr | 24 hr",
+                ...readings.map(row =>
+                  `${row.station} | ${row.current} | ${row.m30} | ${row.h1} | ${row.h3} | ${row.h6} | ${row.h12} | ${row.h24}`
+                )
+              ].join("\n");
+            } finally {
+              window.clearTimeout(timeout);
+            }
+          }
+
           function rf_sweepFor(rx, raw, key){
             const m = (raw||"").match(rx); if(!m) return null;
             const nums = (raw.slice(m.index+m[0].length, m.index+m[0].length+320).match(/[0-9]+(?:\.[0-9]+)?/g)||[]).slice(0,7).map(toNum);
@@ -4932,10 +5237,12 @@ function pickSavedWithData(keys, validator){
             for (const line of txt.split("\n")){
               const s=line.trim(); if(!s || /^station\b/i.test(s)) continue;
               const columns=s.split("|").map(value=>value.trim());
+              if (!columns[0]) columns.shift();
+              if (!columns[columns.length - 1]) columns.pop();
               if (columns.length >= 8) {
                 const station=columns[0];
-                const nums=columns.slice(1,8).map(toNum);
-                if (station && nums.every(Number.isFinite)) {
+                const nums=columns.slice(1,8).map(value => value && value !== "-" ? toNum(value) : NaN);
+                if (station && Number.isFinite(nums[0])) {
                   rows.push({
                     station,current:nums[0],m30:nums[1],h1:nums[2],h3:nums[3],h6:nums[4],h12:nums[5],h24:nums[6],
                     key:rf_keyForStation(station)
@@ -5000,36 +5307,50 @@ function pickSavedWithData(keys, validator){
             rfBody.innerHTML = out.length ? out.join("") :
               `<tr><td colspan="8" class="muted">Freedom Park not found.</td></tr>`;
             const time = parseHeaderTime(raw);
-            rfUpdated.textContent = `${time ? `Time: ${time} • ` : ""}Source: FFWWS`;
+            const source = /rainfall spreadsheet/i.test(noteMsg) ? "RainFall spreadsheet" : "FFWWS";
+            rfUpdated.textContent = `${time ? `Time: ${time} • ` : ""}Source: ${source}`;
           }
 
           async function rf_fetchSave(){
-  try{
-    let raw;
-    try {
-      raw = await getRainfallFromAppsScript();
-    } catch (error) {
-      console.warn("FFWWS rainfall API failed; trying PAGASA fallback.", error);
-      raw = await fetchViaJina(RF_CANDS);
-    }
-    localStorage.setItem(RF_KEYS.newest, raw);
+            let raw = "";
+            let sourceNote = "";
+            try {
+              raw = await getRainfallFromAppsScript();
+            } catch (error) {
+              console.warn("FFWWS rainfall API failed; trying PAGASA fallback.", error);
+            }
 
-    const ok = rf_getValid(raw) && !isNoData(raw);
-    if (ok){
-      const old = localStorage.getItem(RF_KEYS.latest) || "";
-      if (old) localStorage.setItem(RF_KEYS.prev, old);
-      localStorage.setItem(RF_KEYS.latest, raw);
-      rf_render(raw, "");
-    } else {
-      const pick = pickSavedWithData(RF_KEYS, rf_getValid);
-      rf_render(pick.raw, pick.raw ? "No new data; using previous values." : "No data available.");
-    }
-  }catch(error){
-    console.error("FFWWS rainfall refresh failed.", error);
-    const pick = pickSavedWithData(RF_KEYS, rf_getValid);
-    rf_render(pick.raw, pick.raw ? "Fetch failed; showing last saved." : "Fetch failed; no data.");
-  }
-}
+            if (!raw) {
+              try {
+                const candidate = await fetchViaJina(RF_CANDS);
+                if (rf_getValid(candidate) && !isNoData(candidate)) raw = candidate;
+                else throw new Error("PAGASA rainfall response has no valid station readings");
+              } catch (error) {
+                console.warn("PAGASA rainfall fallback failed; trying RainFall spreadsheet.", error);
+              }
+            }
+
+            if (!raw) {
+              try {
+                raw = await getRainfallFromSheet();
+                sourceNote = "Live data via RainFall spreadsheet fallback.";
+              } catch (error) {
+                console.warn("RainFall spreadsheet fallback failed.", error);
+              }
+            }
+
+            if (raw && rf_getValid(raw) && !isNoData(raw)) {
+              localStorage.setItem(RF_KEYS.newest, raw);
+              const old = localStorage.getItem(RF_KEYS.latest) || "";
+              if (old) localStorage.setItem(RF_KEYS.prev, old);
+              localStorage.setItem(RF_KEYS.latest, raw);
+              rf_render(raw, sourceNote);
+              return;
+            }
+
+            const pick = pickSavedWithData(RF_KEYS, rf_getValid);
+            rf_render(pick.raw, pick.raw ? "Live fetch unavailable; showing last saved values." : "No rainfall data available.");
+          }
 
 /* Put this once, with your other helpers */
 function applyMobileLabels() {
