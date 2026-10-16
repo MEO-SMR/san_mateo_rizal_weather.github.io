@@ -1,9 +1,22 @@
 {
+  "app": {
+    "name": "San Mateo Weather & Situational Dashboard",
+    "version": "2.3.4",
+    "timezone": "Asia/Manila",
+    "locale": "en-PH"
+  },
   "location": {
     "name": "San Mateo, Rizal",
     "shortName": "San Mateo, PH",
     "lat": 14.695151709155798,
     "lon": 121.11788215916273
+  },
+  "refresh": {
+    "clock": 1000,
+    "weather": 150000,
+    "youtube": 150000,
+    "ffwws": 3600000,
+    "images": 1800000
   },
   "api": {
     "openWeatherKey": "662bc47b0b806958a77b4b260951abb8",
@@ -14,6 +27,9 @@
   },
   "youtube": {
     "channelId": "UCpyLikj1x70S8UPxVqsPr6g",
+    "latestVideoId": "6wMSXOV6bnU",
+    "latestVideoTitle": "Public Weather Forecast issued at 5:00 AM | October 16, 2026 - Friday",
+    "latestVideoPublishedAt": "2026-10-15T21:17:54Z",
     "streamsUrl": "https://www.youtube.com/@DOST_PAGASA/streams",
     "videosUrl": "https://www.youtube.com/@DOST_PAGASA/videos",
     "embedBase": "https://www.youtube.com/embed/"
@@ -26,9 +42,3 @@
     "windy": "https://www.windy.com/?14.695,121.118,10,i:pressure"
   }
 }
-
-
-
-
-
-
